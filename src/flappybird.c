@@ -13,7 +13,7 @@
 #include "flappybird.h"
 #include "graphic.h"
 #include "util/delay.h"
-#include "main.h"
+#include "utils.h"
 
 #include <stdlib.h>
 
@@ -264,6 +264,11 @@ ObListItem *CreateListItem(Object *obj)
     return tmp;
 }
 
+void setFPS(BaseIntu16 newFPS)
+{
+    FPS = 977 / newFPS;
+}
+
 /*
  *  Run over the object list and update graphics on screen
  *  This function should always be called after the process()
@@ -462,26 +467,4 @@ void OnButtonPressed(BaseIntu8 s)
     if (s & RIGHT) onButtonPressed_R();
     if (s & A) onButtonPressed_A();
     if (s & B) onButtonPressed_B();
-}
-
-int main()
-{
-    // Hardware layer initialization
-    initIO();
-    setFPS(30);
-
-    // Object *tmp = CreateBird();
-    // Object *obstcl = CreateObstacle(5,2,2);
-    // printBird(tmp);
-    // printObstacle(obstcl, NULL);
-    // Software layer initialization
-    InitGame();
-    // GameStart();
-    // Lcd4_Clear();
-    // Lcd4_Set_Cursor(1,0);
-    // Lcd4_Write_String("Christina");
-    while(1);
-    sleep_mode();
-    // the return should never be reached
-    return 0;
 }

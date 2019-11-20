@@ -10,3 +10,117 @@
 *	@date	13/11/19
 **********************************************************/
 
+// io.h should be included first! //
+#include "utils.h"
+#include <avr/interrupt.h>
+#include <avr/sleep.h>
+#include "pinout.h"
+#include "lcd.h"
+
+/* 
+ * The system plans not to use interrupts to implement 
+ * reactions, the pooling strategy will handle all of them.
+*/
+void initIO()
+{
+    initButtons();
+    initLCD();
+    // initFPS();
+    // initUSART();
+    // initTimer();
+    // sei();
+}
+
+void initButtons()
+{
+    BUTTON_DDR &= ~(_BV(BUTTON_A)| _BV(BUTTON_B)| _BV(BUTTON_U)
+    | _BV(BUTTON_D)| _BV(BUTTON_L)| _BV(BUTTON_R));
+}
+
+void initTimer()
+{
+    // prescaler 64
+    TCCR0B |= ((1<<CS01)|(1<<CS00));
+    // use overflow interrupt
+    // basic interrupt freq: 16000000/64/256=977Hz
+    TIMSK0 |= (1<<TOIE0);
+}
+
+void initLCD()
+{
+    LCD_DDR |= (_BV(LCD0)|_BV(LCD1)|_BV(LCD2)|_BV(LCD3)|_BV(LCD_RS)|_BV(LCD_EN));
+    Lcd4_Init();
+    Lcd4_Clear();
+}
+
+void initFPS()
+{
+    FPS_DDR &= ~(_BV(FPS_IN));
+    // Configure ADC,  ADC0
+    ADMUX |= (1 << REFS0);
+    // ADC enable, prescaler 128
+    ADCSRA |= ((1 << ADEN)|(1 << ADPS2)|(1 << ADPS2)|(1 << ADPS0));
+}
+
+void initUSART()
+{
+    // set baud rate
+    UBRR0 = 16000000/16/9600 - 1;
+    // Enable receive and transmit
+    UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+    // set frame format
+    // 8 bits data, 1 stop bit, 0 parity bit
+    // Asychronous USART
+    // Default setting
+    UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+}
+
+uint8_t readButton()
+{
+    // use a register data to farther accelerate access
+    register uint8_t pin_status = BUTTON_PIN;
+    uint8_t tmp = 0;
+    if (pin_status & _BV(BUTTON_A)) tmp |= A;
+    if (pin_status & _BV(BUTTON_B)) tmp |= B;
+    if (pin_status & _BV(BUTTON_L)) tmp |= LEFT;
+    if (pin_status & _BV(BUTTON_R)) tmp |= RIGHT;
+    if (pin_status & _BV(BUTTON_D)) tmp |= DOWN;
+    if (pin_status & _BV(BUTTON_U)) tmp |= UP;
+
+    return tmp;
+}
+
+void transmitByte(uint8_t data)
+{
+    loop_until_bit_is_set(UCSR0A, UDRE0);
+    UDR0 = data;
+}
+
+uint8_t receiveByte()
+{
+    loop_until_bit_is_set(UCSR0A, RXC0);
+    return UDR0;
+}
+
+uint16_t readADC()
+{
+    ADCSRA |= _BV(ADSC);
+    loop_until_bit_is_clear(ADCSRA, ADSC);
+    return ADC;
+}
+
+// ISR(TIMER0_OVF)
+// {
+//     counter++;
+//     if (counter == FPS)
+//     {
+//         tolerance++;
+//         if (tolerance == 977/FPS)
+//         {
+//             process();
+//             ProcessScreen();
+//             tolerance = 0;
+//         }
+//         counter = 0;
+//     }
+// }

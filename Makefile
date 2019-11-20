@@ -3,9 +3,9 @@
 LIB = ./include
 DESTINATION = ./output
 SRC = ./src
-SOURCES = main.c src/flappybird.c src/graphics.c src/lcd.c
-HEADERS = main.h pinout.h include/flappybird.h include/graphic.h include/lcd.h include/types.h
-OBJECTS = output/main.o output/flappybird.o output/graphics.o output/lcd.o
+SOURCES = main.c src/flappybird.c src/graphics.c src/lcd.c src/utils.c
+HEADERS = main.h pinout.h include/flappybird.h include/graphic.h include/lcd.h include/types.h include/utils.h
+OBJECTS = output/main.o output/flappybird.o output/graphics.o output/lcd.o output/utils.o
 TARGET = Game
 
 MCU   = atmega328p
@@ -31,11 +31,14 @@ TARGET_ARCH = -mmcu=$(MCU)
 
 output/main.o : main.c $(HEADERS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c -o $@ $<;
-output/lcd.o : src/lcd.c $(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c -o $@ $<;
-output/flappybird.o : src/flappybird.c	$(HEADERS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c -o $@ $<;
-output/graphics.o : src/graphics.c	$(HEADERS)
+# output/lcd.o : src/lcd.c $(HEADERS)
+# 	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c -o $@ $<;
+# output/flappybird.o : src/flappybird.c	$(HEADERS)
+# 	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c -o $@ $<;
+# output/graphics.o : src/graphics.c	$(HEADERS)
+# 	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c -o $@ $<;
+
+output/%.o: src/%.c $(HEADERS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c -o $@ $<;
 output/$(TARGET).elf : $(OBJECTS)
 	$(CC) $(TARGET_ARCH) $^ -o $@
