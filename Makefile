@@ -46,7 +46,7 @@ all: output/$(TARGET).hex
 clean:
 	rm -f $(wildcard output/*)
 	
-flash: out/$(TARGET).hex
+flash: output/$(TARGET).hex
 	$(AVRDUDE) -c $(PROGRAMMER_TYPE) -p $(MCU) $(PROGRAMMER_ARGS) -U flash:w:$<
 	
 # $(TARGET).elf: $(OBJECTS)

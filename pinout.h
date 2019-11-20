@@ -3,13 +3,13 @@
 // WARNING: THIS SHOULD BE INCLUDED BEFORE lcd.h // 
 
 // LCD
-#define LCD0 PB0
-#define LCD1 PB1
-#define LCD2 PB2
-#define LCD3 PB3
-#define LCD_RS PB4
-#define LCD_EN PB5
-#define LCD_DDR DDRB
+#define LCD0 PC0
+#define LCD1 PC1
+#define LCD2 PC2
+#define LCD3 PC3
+#define LCD_RS PC4
+#define LCD_EN PC5
+#define LCD_DDR DDRC
 
 // BUTTON
 #define BUTTON_L PD7

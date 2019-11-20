@@ -16,6 +16,10 @@
 #define MAX_DEPTH 6
 #define MAX_X 16
 
+static uint32_t FPS = 0;
+static uint32_t counter = 0;
+static uint32_t tolerance = 0;
+
 enum type
 {
     BIRD = 0,

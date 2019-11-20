@@ -19,9 +19,6 @@
 #include "lcd.h"
 #include "main.h"
 
-static uint32_t FPS = 0;
-static uint32_t counter = 0;
-
 /* 
  * The system plans not to use interrupts to implement 
  * reactions, the pooling strategy will handle all of them.
@@ -30,10 +27,10 @@ void initIO()
 {
     initButtons();
     initLCD();
-    initFPS();
-    initUSART();
-    initTimer();
-    sei();
+    // initFPS();
+    // initUSART();
+    // initTimer();
+    // sei();
 }
 
 void initButtons()
@@ -48,20 +45,14 @@ void initTimer()
     TCCR0B |= ((1<<CS01)|(1<<CS00));
     // use overflow interrupt
     // basic interrupt freq: 16000000/64/256=977Hz
-    TIMSK0 |= ((1<<TOIE0));
+    TIMSK0 |= (1<<TOIE0);
 }
 
 void initLCD()
 {
-#define D4 eS_PORTB0
-#define D5 eS_PORTB1
-#define D6 eS_PORTB2
-#define D7 eS_PORTB3
-#define RS eS_PORTB4
-#define EN eS_PORTB5
-
     LCD_DDR |= (_BV(LCD0)|_BV(LCD1)|_BV(LCD2)|_BV(LCD3)|_BV(LCD_RS)|_BV(LCD_EN));
     Lcd4_Init();
+    Lcd4_Clear();
 }
 
 void initFPS()
@@ -123,27 +114,18 @@ void setFPS(uint16_t newFPS)
     FPS = 977 / newFPS;
 }
 
-ISR(TIMER0_OVF)
-{
-    counter++;
-    if (counter == FPS)
-    {
-        process();
-        ProcessScreen();
-        counter = 0;
-    }
-}
-
-int main()
-{
-    // Hardware layer initialization
-    initIO();
-    setFPS(30);
-
-    // Software layer initialization
-    InitGame();
-
-    sleep_mode();
-    // the return should never be reached
-    return 0;
-}
+// ISR(TIMER0_OVF)
+// {
+//     counter++;
+//     if (counter == FPS)
+//     {
+//         tolerance++;
+//         if (tolerance == 977/FPS)
+//         {
+//             process();
+//             ProcessScreen();
+//             tolerance = 0;
+//         }
+//         counter = 0;
+//     }
+// }

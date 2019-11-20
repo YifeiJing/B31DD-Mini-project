@@ -12,6 +12,7 @@
 
 #include "flappybird.h"
 #include "graphic.h"
+#include "util/delay.h"
 #include "main.h"
 
 #include <stdlib.h>
@@ -20,7 +21,7 @@
 
 static ObListItem *head, *tail;
 static Object *Bird;
-static Status gameStatus;
+static Status gameStatus = BEGIN;
 static BaseIntu16 score;
 
 /******************************************************************************/
@@ -182,6 +183,11 @@ static void printEndMenu()
  * */
 void process()
 {
+    if (gameStatus != PLAYING)
+    {
+        return;
+    }
+    
     ObListItem *tmp = head;
 
     for (; tmp != tail; tmp = tmp->next)
@@ -225,7 +231,7 @@ Object *CreateBird()
     Object *tmp = (Object*) malloc(sizeof(Object));
     tmp->type = BIRD;
     tmp->x = 0;
-    tmp->y = VERTCENTER;
+    tmp->y = 5;
 
     return tmp;
 }
@@ -255,6 +261,7 @@ ObListItem *CreateListItem(Object *obj)
 {
     ObListItem *tmp = (ObListItem*) malloc(sizeof(ObListItem));
     tmp->obj = obj;
+    return tmp;
 }
 
 /*
@@ -263,6 +270,11 @@ ObListItem *CreateListItem(Object *obj)
  */
 void ProcessScreen()
 {
+    if (gameStatus != PLAYING)
+    {
+        return;
+    }
+    
     ObListItem *tmp = head;
 
     ClearScreen();
@@ -309,7 +321,7 @@ void AddNewItem(ObListItem *Item)
 void InitGame()
 {
     printInit();
-    srand(1234);
+    srand(123456);
     head = CreateListItem(CreateBird());
     tail = head;
     InitObstacles();
@@ -358,8 +370,18 @@ void AddNewObstacle()
 void GameStart()
 {
     gameStatus = BEGIN;
+    BaseIntu8 signal = 0;
+
     printStartMenu();
-    while(1);
+    while(1)
+    {
+        signal = readButton();
+        if (signal)
+        {
+            // _delay_ms(100);
+            OnButtonPressed(signal);
+        }
+    }
 
     // this function never return
 }
@@ -367,8 +389,17 @@ void GameStart()
 void GameEnd()
 {
     gameStatus = END;
+    BaseIntu8 signal = 0;
     printEndMenu();
-    while(1);
+    while(1)
+    {
+        signal = readButton();
+        if (signal)
+        {
+            // _delay_ms(100);
+            OnButtonPressed(signal);
+        }
+    }
 
     // this function never return
 }
@@ -377,12 +408,33 @@ void GameLooper()
 {
     score = 0;
     gameStatus = PLAYING;
+    ProcessScreen();
     BaseIntu8 signal = 0;
+    BaseIntu16 scaler = 0;
     while(1)
     {
+        scaler++;
+        if (scaler == 128)
+        {
+            counter++;
+            if (counter == FPS)
+            {
+                tolerance++;
+                if (tolerance == FPS/977)
+                {
+                    process();
+                    ProcessScreen();
+                    tolerance = 0;
+                }
+                counter = 0;
+
+            }
+            scaler = 0;
+        }
         signal = readButton();
         if (signal)
         {
+            // _delay_ms(100);
             OnButtonPressed(signal);
         }
     }
@@ -396,4 +448,26 @@ void OnButtonPressed(BaseIntu8 s)
     if (s & RIGHT) onButtonPressed_R();
     if (s & A) onButtonPressed_A();
     if (s & B) onButtonPressed_B();
+}
+
+int main()
+{
+    // Hardware layer initialization
+    initIO();
+    setFPS(30);
+
+    // Object *tmp = CreateBird();
+    // Object *obstcl = CreateObstacle(5,2,2);
+    // printBird(tmp);
+    // printObstacle(obstcl, NULL);
+    // Software layer initialization
+    InitGame();
+    // GameStart();
+    // Lcd4_Clear();
+    // Lcd4_Set_Cursor(1,0);
+    // Lcd4_Write_String("Christina");
+    while(1);
+    sleep_mode();
+    // the return should never be reached
+    return 0;
 }

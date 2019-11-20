@@ -41,12 +41,12 @@
 #define D3 eS_PORTA3
 #endif
 
-#define D4 eS_PORTB0
-#define D5 eS_PORTB1
-#define D6 eS_PORTB2
-#define D7 eS_PORTB3
-#define RS eS_PORTB4
-#define EN eS_PORTB5
+#define D4 eS_PORTC0
+#define D5 eS_PORTC1
+#define D6 eS_PORTC2
+#define D7 eS_PORTC3
+#define RS eS_PORTC4
+#define EN eS_PORTC5
 
 
 #include <avr/io.h>
