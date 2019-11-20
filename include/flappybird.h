@@ -13,7 +13,7 @@
 #define FLAPPYBIRD_H
 
 #include "types.h"
-#define MAX_DEPTH 6
+#define MAX_DEPTH 16
 #define MAX_X 16
 
 static uint32_t FPS = 0;
@@ -80,7 +80,7 @@ void InitObstacles();
 void AddNewObstacle();
 void GameStart();
 void GameEnd();
-void GameLooper();
+void GameLooper(BaseIntu8 s);
 void OnButtonPressed(BaseIntu8 s);
 
 #endif

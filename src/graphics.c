@@ -56,7 +56,7 @@ static void setbird(uint8_t height, uint8_t x) // range from 0 to 12
 static void setobstacle(uint8_t x, uint8_t y, uint8_t height, uint8_t id, uint8_t shadow, uint8_t birdheight)
 {
     uint8_t offset = id * 0x10;
-    uint8_t dy = y * 3, dheight = height * 3, du = 15 - dy - dheight;
+    uint8_t dy = y, dheight = height, du = 15 - dy - dheight;
     uint8_t index = 0;
     uint8_t buffer[16];
 
@@ -106,7 +106,7 @@ void printBird(Object *bird)
 void printObstacle(Object *obstacle, Object *bird)
 {
     if (bird)
-        setobstacle(obstacle->x, obstacle->y, obstacle->height, cid+1, 1, bird->height);
+        setobstacle(obstacle->x, obstacle->y, obstacle->height, cid+1, 1, bird->y);
     else
         setobstacle(obstacle->x, obstacle->y, obstacle->height, cid+1, 0, 0);
     

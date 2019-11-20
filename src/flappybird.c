@@ -34,7 +34,7 @@ static void onButtonPressed_L()
     switch (gameStatus)
     {
     case BEGIN:
-        GameLooper();
+        GameLooper(0);
         break;
     case PLAYING:
         break;
@@ -51,7 +51,7 @@ static void onButtonPressed_R()
     switch (gameStatus)
     {
     case BEGIN:
-        GameLooper();
+        GameLooper(0);
         break;
     case PLAYING:
         break;
@@ -68,10 +68,10 @@ static void onButtonPressed_U()
     switch (gameStatus)
     {
     case BEGIN:
-        GameLooper();
+        GameLooper(0);
         break;
     case PLAYING:
-        if (Bird->y != MAX_DEPTH - 1) Bird->y++;
+        if (Bird->y+3 != MAX_DEPTH - 1) Bird->y++;
         if (Bird->x == head->next->obj->x) 
         {
             CheckHeight(head->next);
@@ -95,7 +95,7 @@ static void onButtonPressed_D()
     switch (gameStatus)
     {
     case BEGIN:
-        GameLooper();
+        GameLooper(0);
         break;
     case PLAYING:
         break;
@@ -112,10 +112,10 @@ static void onButtonPressed_A()
     switch (gameStatus)
     {
     case BEGIN:
-        GameLooper();
+        GameLooper(0);
         break;
     case PLAYING:
-        Bird->y++;
+        if (Bird->y+3 != MAX_DEPTH - 1) Bird->y++;
         if (Bird->x == head->next->obj->x) 
         {
             CheckHeight(head->next);
@@ -127,7 +127,7 @@ static void onButtonPressed_A()
         }
         break;
     case END:
-        GameLooper();
+        GameLooper(1);
         break;
     
     default:
@@ -140,7 +140,7 @@ static void onButtonPressed_B()
     switch (gameStatus)
     {
     case BEGIN:
-        GameLooper();
+        GameLooper(0);
         break;
     case PLAYING:
         break;
@@ -204,10 +204,10 @@ void process()
             // if the current processing item has moved out of screen
             if (tmp->obj->x == 0xFF)
             {
-                tmp->pre = tmp->next;
+                tmp->pre->next = tmp->next;
                 tmp->next->pre = tmp->pre;
-                DeleteObj(tmp->obj);
-                DeleteListItem (tmp);
+                // DeleteObj(tmp->obj);
+                // DeleteListItem (tmp);
                 // After deletion, add a new obstacle
                 AddNewObstacle();
             }
@@ -286,7 +286,7 @@ void ProcessScreen()
         }
         else if (tmp->obj->type == OBSTACLE)
         {
-            if (tmp->pre->obj == Bird)
+            if (tmp->pre->obj == Bird && tmp->obj->x == Bird->x)
             {
                 printObstacle (tmp->obj, Bird);
             }
@@ -324,6 +324,7 @@ void InitGame()
     srand(123456);
     head = CreateListItem(CreateBird());
     tail = head;
+    Bird = head->obj;
     InitObstacles();
 
     GameStart();
@@ -331,7 +332,7 @@ void InitGame()
 
 void InitObstacles()
 {
-    int height, y, x;
+    BaseIntu8 height, y, x;
 
     // randomly create three obstacles
     // First make three interval for obstacle each
@@ -339,16 +340,16 @@ void InitObstacles()
 
     // As the bird is at x = 0, we choose the strategy
     // that the first obstacle is at x = 3
-    y = rand() % (MAX_DEPTH - 1);
-    height = 1 + rand() % (MAX_DEPTH - y);  // the height can not be 0, give it an offset
+    y = rand() % (MAX_DEPTH - 4);
+    height = 4 + rand() % (MAX_DEPTH - 4 - y);  // the height can not be 0, give it an offset
 
     AddNewItem (CreateListItem (CreateObstacle (3, y, height)));
 
-    for (int i = 1; i < 3; ++i)
+    for (int i = 1; i <= 3; ++i)
     {
         x = interval * i + rand() % interval;
-        y = rand() % (MAX_DEPTH - 1);
-        height = 1 + rand() % (MAX_DEPTH - y);
+        y = rand() % (MAX_DEPTH - 4);
+        height = 4 + rand() % (MAX_DEPTH - 4 - y);
         AddNewItem (CreateListItem (CreateObstacle (x, y, height)));
     }
 }
@@ -361,8 +362,8 @@ void InitObstacles()
 void AddNewObstacle()
 {
     BaseIntu8 y, height;
-    y = rand() % (MAX_DEPTH - 1);
-    height = 1 + rand() % (MAX_DEPTH - y);
+    y = rand() % (MAX_DEPTH - 4);
+    height = 4 + rand() % (MAX_DEPTH - 4 - y);
 
     AddNewItem (CreateListItem (CreateObstacle (MAX_X, y, height)));
 }
@@ -404,8 +405,19 @@ void GameEnd()
     // this function never return
 }
 
-void GameLooper()
+/*
+ * Use signal s to indicate whether it is restarted
+ */
+void GameLooper(BaseIntu8 s)
 {
+    if (s)
+    {
+        printInit();
+        head = CreateListItem(CreateBird());
+        tail = head;
+        Bird = head->obj;
+        InitObstacles();
+    }
     score = 0;
     gameStatus = PLAYING;
     ProcessScreen();
@@ -414,18 +426,20 @@ void GameLooper()
     while(1)
     {
         scaler++;
-        if (scaler == 128)
+        if (scaler == 5)
         {
             counter++;
             if (counter == FPS)
             {
-                tolerance++;
-                if (tolerance == FPS/977)
-                {
-                    process();
-                    ProcessScreen();
-                    tolerance = 0;
-                }
+                // tolerance++;
+                // if (tolerance == 977/FPS)
+                // {
+                //     process();
+                //     ProcessScreen();
+                //     tolerance = 0;
+                // }
+                process();
+                ProcessScreen();
                 counter = 0;
 
             }
