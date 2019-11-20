@@ -145,7 +145,7 @@ static void onButtonPressed_B()
     case PLAYING:
         break;
     case END:
-        GameStart();
+        InitGame();
         break;
     
     default:
@@ -195,7 +195,7 @@ void process()
         if (tmp->obj->type == BIRD)
         {
             tmp->obj->y--;
-            if (tmp->obj->y < 0)
+            if (tmp->obj->y == 0xFF)
                 GameEnd();
         }
         else if (tmp->obj->type == OBSTACLE)
@@ -309,7 +309,7 @@ BaseIntu8 CheckHeight(ObListItem *item)
     if (item->obj->y >= Bird->y) GameEnd();
     else
     {
-        if ((item->obj->y + item->obj->height) < Bird->y)
+        if ((item->obj->y + item->obj->height) < Bird->y + 3)
             GameEnd();
     }
     
@@ -394,6 +394,7 @@ void GameStart()
 
 void GameEnd()
 {
+    disableTimer();
     gameStatus = END;
     BaseIntu8 signal = 0;
     printEndMenu();
@@ -427,29 +428,12 @@ void GameLooper(BaseIntu8 s)
     gameStatus = PLAYING;
     ProcessScreen();
     BaseIntu8 signal = 0;
-    BaseIntu16 scaler = 0;
+    // BaseIntu16 scaler = 0;
+    _delay_ms(200); // this is necessary to avoid double steps
+    enableTimer();
     while(1)
     {
-        scaler++;
-        if (scaler == 5)
-        {
-            counter++;
-            if (counter == FPS)
-            {
-                // tolerance++;
-                // if (tolerance == 977/FPS)
-                // {
-                //     process();
-                //     ProcessScreen();
-                //     tolerance = 0;
-                // }
-                process();
-                ProcessScreen();
-                counter = 0;
-
-            }
-            scaler = 0;
-        }
+        // scaler++;
         signal = readButton();
         if (signal)
         {
@@ -461,10 +445,12 @@ void GameLooper(BaseIntu8 s)
 
 void OnButtonPressed(BaseIntu8 s)
 {
+    disableTimer();
     if (s & UP) onButtonPressed_U();
     if (s & DOWN) onButtonPressed_D();
     if (s & LEFT) onButtonPressed_L();
     if (s & RIGHT) onButtonPressed_R();
     if (s & A) onButtonPressed_A();
     if (s & B) onButtonPressed_B();
+    enableTimer();
 }

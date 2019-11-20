@@ -16,6 +16,7 @@
 #include <avr/sleep.h>
 #include "pinout.h"
 #include "lcd.h"
+#include "flappybird.h"
 
 /* 
  * The system plans not to use interrupts to implement 
@@ -27,8 +28,9 @@ void initIO()
     initLCD();
     // initFPS();
     // initUSART();
-    // initTimer();
-    // sei();
+    initTimer();
+    sei();
+    disableTimer();
 }
 
 void initButtons()
@@ -40,10 +42,10 @@ void initButtons()
 void initTimer()
 {
     // prescaler 64
-    TCCR0B |= ((1<<CS01)|(1<<CS00));
+    TCCR2B |= ((1<<CS22));
     // use overflow interrupt
     // basic interrupt freq: 16000000/64/256=977Hz
-    TIMSK0 |= (1<<TOIE0);
+    TIMSK2 |= (1<<TOIE2);
 }
 
 void initLCD()
@@ -109,18 +111,25 @@ uint16_t readADC()
     return ADC;
 }
 
-// ISR(TIMER0_OVF)
-// {
-//     counter++;
-//     if (counter == FPS)
-//     {
-//         tolerance++;
-//         if (tolerance == 977/FPS)
-//         {
-//             process();
-//             ProcessScreen();
-//             tolerance = 0;
-//         }
-//         counter = 0;
-//     }
-// }
+ISR(TIMER2_OVF_vect)
+{
+    counter++;
+    if (counter >= 700)
+    {
+        process();
+        ProcessScreen();
+        counter = 0;
+    }
+}
+
+void disableTimer()
+{
+    TCCR2B = 0;
+    cli();
+}
+
+void enableTimer()
+{
+    TCCR2B |= ((1<<CS22));
+    sei();
+}

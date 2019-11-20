@@ -12,7 +12,8 @@ void initFPS();
 void initUSART();
 void initTimer();
 uint8_t readButton();
-
+void disableTimer();
+void enableTimer();
 
 #define RIGHT 0x01
 #define LEFT 0x02
