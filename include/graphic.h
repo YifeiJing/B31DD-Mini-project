@@ -20,5 +20,7 @@ void ClearScreen();
 void printString(uint8_t lineNo,const char *s);
 void printChar(uint8_t a,uint8_t b,const char c);
 void printDigits(uint8_t a,uint8_t b, const int num);
+void screenShiftRight();
+void screenShiftLeft();
 
 #endif

@@ -175,7 +175,17 @@ static void printEndMenu()
     ClearScreen();
     printString(1, "Score:");
     printDigits(1, 6, score);
-    printString(2, "Again[A] or Quit[B]?");
+    BaseIntu16 highestscore = readEEPROM(SCORE_ADDR);
+    highestscore |= (readEEPROM(SCORE_ADDR+1) << 8);
+    if (score > highestscore)
+    {
+        wirteEEPROM(SCORE_ADDR, score);
+        wirteEEPROM(SCORE_ADDR+1, score >> 8);
+    }
+    printString(2, "Highest:");
+    printDigits(2, 9, highestscore);
+    _delay_ms(4000);
+    printString(2, "Again[A]/Quit[B]?");
 }
 
 /******************************************************************************/
@@ -350,16 +360,16 @@ void InitObstacles()
 
     // As the bird is at x = 0, we choose the strategy
     // that the first obstacle is at x = 3
-    y = rand() % (MAX_DEPTH - 4);
-    height = 4 + rand() % (MAX_DEPTH - 4 - y);  // the height can not be 0, give it an offset
+    y = rand() % (MAX_DEPTH - 5);
+    height = 5 + rand() % (MAX_DEPTH - 5 - y);  // the height can not be 0, give it an offset
 
     AddNewItem (CreateListItem (CreateObstacle (3, y, height)));
 
     for (int i = 1; i <= 3; ++i)
     {
         x = interval * i + rand() % interval;
-        y = rand() % (MAX_DEPTH - 4);
-        height = 4 + rand() % (MAX_DEPTH - 4 - y);
+        y = rand() % (MAX_DEPTH - 5);
+        height = 5 + rand() % (MAX_DEPTH - 5 - y);
         AddNewItem (CreateListItem (CreateObstacle (x, y, height)));
     }
 }
@@ -372,8 +382,8 @@ void InitObstacles()
 void AddNewObstacle()
 {
     BaseIntu8 y, height;
-    y = rand() % (MAX_DEPTH - 4);
-    height = 4 + rand() % (MAX_DEPTH - 4 - y);
+    y = rand() % (MAX_DEPTH - 5);
+    height = 5 + rand() % (MAX_DEPTH - 5 - y);
 
     AddNewItem (CreateListItem (CreateObstacle (MAX_X, y, height)));
 }
@@ -382,10 +392,13 @@ void GameStart()
 {
     gameStatus = BEGIN;
     BaseIntu8 signal = 0;
+    BaseIntu8 shift = 0;
 
+    disableTimer();
     printStartMenu();
     while(1)
     {
+        
         signal = readButton();
         if (signal)
         {

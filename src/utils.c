@@ -14,6 +14,7 @@
 #include "utils.h"
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
+#include <avr/eeprom.h>
 #include "pinout.h"
 #include "lcd.h"
 #include "flappybird.h"
@@ -27,7 +28,7 @@ void initIO()
     initButtons();
     initLCD();
     // initFPS();
-    // initUSART();
+    initUSART();
     initTimer();
     sei();
     disableTimer();
@@ -114,7 +115,7 @@ uint16_t readADC()
 ISR(TIMER2_OVF_vect)
 {
     counter++;
-    if (counter >= 700)
+    if (counter >= 560)
     {
         process();
         ProcessScreen();
@@ -137,4 +138,34 @@ void enableTimer()
 void Sleep()
 {
     sleep_mode();
+}
+
+void test_eeprom()
+{
+    // eeprom_write_byte(0x0F, 100);
+    eeprom_write_byte(0xF0, 0);
+    eeprom_write_byte(0xF1, 0);
+
+    while (1)
+    {
+        char a = receiveByte();
+        if (a == 'a') transmitByte(eeprom_read_byte(0x0F));
+        else if (a == 'b') transmitByte(eeprom_read_byte(0xF1));
+        else
+        {
+            transmitByte(eeprom_read_byte(0xF2));
+        }
+        
+    }
+    
+}
+
+void wirteEEPROM(void *p, uint8_t data)
+{
+    eeprom_write_byte(p, data);
+}
+
+uint8_t readEEPROM(void *p)
+{
+    return eeprom_read_byte(p);
 }

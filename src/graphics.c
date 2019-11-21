@@ -154,3 +154,13 @@ void printDigits(uint8_t a,uint8_t b, const int num)
         i /= 10;
     }
 }
+
+void screenShiftRight()
+{
+    Lcd4_Shift_Right();
+}
+
+void screenShiftLeft()
+{
+    Lcd4_Shift_Left();
+}

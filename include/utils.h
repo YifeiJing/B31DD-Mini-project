@@ -15,6 +15,9 @@ uint8_t readButton();
 void disableTimer();
 void enableTimer();
 void Sleep();
+void test_eeprom();
+void wirteEEPROM(void *p, uint8_t data);
+uint8_t readEEPROM(void *p);
 
 #define RIGHT 0x01
 #define LEFT 0x02

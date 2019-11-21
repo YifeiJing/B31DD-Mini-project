@@ -20,6 +20,7 @@ int main()
 
     // Software layer initialization
     InitGame();
+    // test_eeprom();
 
     Sleep();
     // the return should never be reached

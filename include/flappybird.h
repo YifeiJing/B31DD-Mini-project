@@ -16,6 +16,7 @@
 #define MAX_DEPTH 16
 #define MAX_X 16
 #define MAX_SPEED 3
+#define SCORE_ADDR 0xF0
 
 static BaseIntu32 FPS = 0;
 static BaseIntu32 counter = 0;
