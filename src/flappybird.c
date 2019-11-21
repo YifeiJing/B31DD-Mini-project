@@ -22,7 +22,8 @@
 static ObListItem *head, *tail;
 static Object *Bird;
 static Status gameStatus = BEGIN;
-static BaseIntu16 score;
+static BaseIntu16 score = 0;
+static BaseIntu8 speed = 1;
 
 /******************************************************************************/
 /***************************** private functions ******************************/
@@ -71,6 +72,7 @@ static void onButtonPressed_U()
         GameLooper(0);
         break;
     case PLAYING:
+        speed = 1;
         if (Bird->y+3 != MAX_DEPTH - 1) Bird->y++;
         if (Bird->x == head->next->obj->x) 
         {
@@ -115,6 +117,7 @@ static void onButtonPressed_A()
         GameLooper(0);
         break;
     case PLAYING:
+        speed = 1;
         if (Bird->y+3 != MAX_DEPTH - 1) Bird->y++;
         if (Bird->x == head->next->obj->x) 
         {
@@ -152,6 +155,7 @@ static void onButtonPressed_B()
         break;
     }
 }
+
 /* -------------- User Interfaces ---------------- */
 static void printInit()
 {
@@ -194,8 +198,9 @@ void process()
     {
         if (tmp->obj->type == BIRD)
         {
-            tmp->obj->y--;
-            if (tmp->obj->y == 0xFF)
+            tmp->obj->y -= speed;
+            speed = speed == MAX_SPEED ? MAX_SPEED : speed + 1;
+            if (tmp->obj->y >= MAX_DEPTH)
                 GameEnd();
         }
         else if (tmp->obj->type == OBSTACLE)

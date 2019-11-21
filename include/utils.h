@@ -14,6 +14,7 @@ void initTimer();
 uint8_t readButton();
 void disableTimer();
 void enableTimer();
+void Sleep();
 
 #define RIGHT 0x01
 #define LEFT 0x02

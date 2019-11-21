@@ -133,3 +133,8 @@ void enableTimer()
     TCCR2B |= ((1<<CS22));
     sei();
 }
+
+void Sleep()
+{
+    sleep_mode();
+}

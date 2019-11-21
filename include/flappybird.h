@@ -15,6 +15,7 @@
 #include "types.h"
 #define MAX_DEPTH 16
 #define MAX_X 16
+#define MAX_SPEED 3
 
 static BaseIntu32 FPS = 0;
 static BaseIntu32 counter = 0;

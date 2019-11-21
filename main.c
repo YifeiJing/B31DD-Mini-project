@@ -18,18 +18,10 @@ int main()
     initIO();
     setFPS(30);
 
-    // Object *tmp = CreateBird();
-    // Object *obstcl = CreateObstacle(5,2,2);
-    // printBird(tmp);
-    // printObstacle(obstcl, NULL);
     // Software layer initialization
     InitGame();
-    // GameStart();
-    // Lcd4_Clear();
-    // Lcd4_Set_Cursor(1,0);
-    // Lcd4_Write_String("Christina");
-    while(1);
-    sleep_mode();
+
+    Sleep();
     // the return should never be reached
     return 0;
 }
