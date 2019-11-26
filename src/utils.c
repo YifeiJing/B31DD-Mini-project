@@ -10,7 +10,6 @@
 *	@date	13/11/19
 **********************************************************/
 
-// io.h should be included first! //
 #include "utils.h"
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
@@ -105,6 +104,16 @@ uint8_t receiveByte()
     return UDR0;
 }
 
+void sendString(char const *s)
+{
+    while (*s)
+    {
+        transmitByte(*s);
+        s++;
+    }
+    
+}
+
 uint16_t readADC()
 {
     ADCSRA |= _BV(ADSC);
@@ -120,6 +129,45 @@ ISR(TIMER2_OVF_vect)
         process();
         ProcessScreen();
         counter = 0;
+    }
+    // Deal with tasks
+    for (uint8_t i = 0; i < MAX_TASK; ++i)
+    {
+        if (TaskList[i])
+        {
+            if (TaskList[i]->cycle > 0)
+            {
+                if (TaskList[i]->state == TaskList[i]->delay)
+                {
+                    TaskList[i]->p();
+                    TaskList[i]->cycle--;
+                    TaskList[i]->state = 0;
+                }
+                else
+                {
+                    TaskList[i]->state++;
+                }
+                
+            }
+            // -1 for infinite cycles
+            else if (TaskList[i]->cycle == -1)
+            {
+                if (TaskList[i]->state == TaskList[i]->delay)
+                {
+                    TaskList[i]->p();
+                    TaskList[i]->state = 0;
+                }
+                else
+                {
+                    TaskList[i]->state++;
+                }
+            }
+            else
+            {
+                deleteTask(TaskList[i]);
+                TaskList[i] = NULL;
+            }   
+        }
     }
 }
 
@@ -168,4 +216,60 @@ void wirteEEPROM(void *p, uint8_t data)
 uint8_t readEEPROM(void *p)
 {
     return eeprom_read_byte(p);
+}
+
+taskItem* createTask (void (*p)(), int16_t cycle, int16_t delay)
+{
+    taskItem *tmp = (taskItem*) malloc(sizeof(taskItem));
+    tmp->p = p;
+    tmp->cycle = cycle;
+    tmp->delay = delay;
+    tmp->state = 0;
+
+    return tmp;
+}
+
+uint8_t addTask(taskItem *task)
+{
+    for (uint8_t i = 0; i < MAX_TASK; ++i)
+    {
+        if (!TaskList[i]) 
+        {
+            TaskList[i] = task;
+            return i;
+        }
+    }
+}
+
+void deleteTask(taskItem *task)
+{
+    free(task);
+}
+
+void testmemory()
+{
+    sendString("Initialize a task item");
+    transmitByte(0x0a);
+    taskItem* task = (taskItem *) malloc(sizeof(taskItem));
+    task->p = testmemory;
+    task->cycle = 1;
+    task->delay = 10;
+    task->state = 0;
+
+    int tmp = (int) task;
+    while (tmp/10)
+    {
+        transmitByte('0' + tmp%10);
+        tmp = tmp/10;
+    }
+    
+    free(task);
+    sendString("Free memory success");
+    transmitByte(0x0a);
+    tmp = (int) task;
+    while (tmp/10)
+    {
+        transmitByte('0' + tmp%10);
+        tmp = tmp/10;
+    }
 }

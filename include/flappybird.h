@@ -73,6 +73,7 @@ Object *CreateBird();
 Object *CreateObstacle(BaseIntu8 x, BaseIntu8 y, BaseIntu8 height);
 void DeleteObj(Object *obj);
 void DeleteListItem(ObListItem *item);
+void deleteAll();
 ObListItem *CreateListItem(Object *obj);
 void ProcessScreen();
 BaseIntu8 CheckHeight(ObListItem *item);
@@ -85,5 +86,6 @@ void GameEnd();
 void GameLooper(BaseIntu8 s);
 void OnButtonPressed(BaseIntu8 s);
 void setFPS(uint16_t newFPS);
+void subtileshifter();
 
 #endif

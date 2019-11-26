@@ -21,7 +21,8 @@ int main()
     // Software layer initialization
     InitGame();
     // test_eeprom();
-
+    // testmemory();
+    while(1);
     Sleep();
     // the return should never be reached
     return 0;

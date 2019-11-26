@@ -12,7 +12,6 @@
 
 #include "flappybird.h"
 #include "graphic.h"
-#include "util/delay.h"
 #include "utils.h"
 
 #include <stdlib.h>
@@ -166,8 +165,9 @@ static void printInit()
 static void printStartMenu()
 {
     ClearScreen();
-    printString(1, "Flappy Bird Game!!!");
-    printString(2, "Press any button");
+    printString(1, " A Flappy Bird Game!!!");
+    printString(2, " Press any button to play!");
+    enableTimer();
 }
 
 static void printEndMenu()
@@ -189,6 +189,33 @@ static void printEndMenu()
 }
 
 /******************************************************************************/
+
+void subtileshifter()
+{
+    if (gameStatus == PLAYING)
+    {
+        // counter = 0;
+        return;
+    }
+
+    // static uint8_t counter = 0;
+
+    // if (counter == 20)
+    //     counter = 0;
+
+    // if (counter < 10)
+    // {
+    //     screenShiftLeft();
+    // }
+    // else if (counter >= 10)
+    // {
+    //     screenShiftRight();
+    // }
+
+    // counter++;
+
+    screenShiftLeft();
+}
 
 /*
  * When a tick event happens, it will call this
@@ -219,10 +246,12 @@ void process()
             // if the current processing item has moved out of screen
             if (tmp->obj->x == 0xFF)
             {
+                ObListItem *tmp2 = tmp->pre;
                 tmp->pre->next = tmp->next;
                 tmp->next->pre = tmp->pre;
-                // DeleteObj(tmp->obj);
-                // DeleteListItem (tmp);
+                DeleteObj(tmp->obj);
+                DeleteListItem (tmp);
+                tmp = tmp2;
                 // After deletion, add a new obstacle
                 AddNewObstacle();
             }
@@ -395,6 +424,7 @@ void GameStart()
     BaseIntu8 shift = 0;
 
     disableTimer();
+    addTask(createTask(subtileshifter, -1, 300));
     printStartMenu();
     while(1)
     {
@@ -410,10 +440,24 @@ void GameStart()
     // this function never return
 }
 
+void deleteAll()
+{
+    ObListItem *tmp = head;
+    while (tmp != tail)
+    {
+        DeleteObj(tmp->obj);
+        tmp = tmp->next;
+        DeleteListItem(tmp->pre);
+    }
+    DeleteObj(tmp->obj);
+    DeleteListItem(tmp);
+}
+
 void GameEnd()
 {
     disableTimer();
     gameStatus = END;
+    deleteAll();
     BaseIntu8 signal = 0;
     printEndMenu();
     while(1)
