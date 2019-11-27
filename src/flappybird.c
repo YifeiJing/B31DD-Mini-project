@@ -167,14 +167,13 @@ static void printStartMenu()
     ClearScreen();
     printString(1, " A Flappy Bird Game!!!");
     printString(2, " Press any button to play!");
-    enableTimer();
 }
 
 static void printEndMenu()
 {
     ClearScreen();
-    printString(1, "Score:");
-    printDigits(1, 6, score);
+    printString(1, "Your Score: ");
+    printDigits(1, 12, score);
     BaseIntu16 highestscore = readEEPROM(SCORE_ADDR);
     highestscore |= (readEEPROM(SCORE_ADDR+1) << 8);
     if (score > highestscore)
@@ -184,8 +183,17 @@ static void printEndMenu()
     }
     printString(2, "Highest:");
     printDigits(2, 9, highestscore);
-    _delay_ms(4000);
-    printString(2, "Again[A]/Quit[B]?");
+    // delay_ms(4000);
+    while(1)
+    {
+        uint8_t signal = readButton();
+        if (signal)
+        {
+            delay_ms(200);
+            break;
+        }
+    }
+    printString(2, "PLay Again[A] or Quit[B]?");
 }
 
 /******************************************************************************/
@@ -213,8 +221,16 @@ void subtileshifter()
     // }
 
     // counter++;
-
+    disableTimer();
     screenShiftLeft();
+    enableTimer();
+}
+
+void buttonPressTask()
+{
+    BaseIntu8 signal = readButton();
+    if (signal)
+        OnButtonPressed(signal);
 }
 
 /*
@@ -261,7 +277,6 @@ void process()
             }
         }
     }
-    score += 10;
 }
 
 /*
@@ -339,6 +354,7 @@ void ProcessScreen()
             {
                 printObstacle (tmp->obj, Bird);
             }
+            else if (tmp->obj->x >= MAX_X) return;
             else
             {
                 printObstacle (tmp->obj, NULL);
@@ -350,13 +366,22 @@ void ProcessScreen()
 
 BaseIntu8 CheckHeight(ObListItem *item)
 {
-    if (item->obj->y >= Bird->y) GameEnd();
+    if (item->obj->y >= Bird->y) 
+    {
+        GameEnd();
+        return;
+    }
     else
     {
         if ((item->obj->y + item->obj->height) < Bird->y + 3)
+        {
             GameEnd();
+            return;
+        }
     }
-    
+    score += 10;
+    LEDOn();
+    addTask(createTask(LEDOff,1,500));
 }
 
 /* add a new item to the end of the list */
@@ -369,13 +394,16 @@ void AddNewItem(ObListItem *Item)
 
 void InitGame()
 {
+    disableTimer();
     printInit();
     srand(123456);
+    LEDOff();
     head = CreateListItem(CreateBird());
     tail = head;
     Bird = head->obj;
     InitObstacles();
-
+    addTask(createTask(subtileshifter, -1, 300));
+    addTask(createTask(buttonPressTask, -1, 0));
     GameStart();
 }
 
@@ -410,11 +438,21 @@ void InitObstacles()
  */
 void AddNewObstacle()
 {
-    BaseIntu8 y, height;
+    BaseIntu8 x, y, height;
+    BaseIntu8 const interval = MAX_X / 4;
+    x = rand() % interval;
+    if (MAX_X + x == tail->obj->x + 1) x++;
     y = rand() % (MAX_DEPTH - 5);
     height = 5 + rand() % (MAX_DEPTH - 5 - y);
-
-    AddNewItem (CreateListItem (CreateObstacle (MAX_X, y, height)));
+    
+    sendString("Creat new abstacle: x :");
+    sendDigits(MAX_X + x);
+    sendString(" y:");
+    sendDigits(y);
+    sendString(" height:");
+    sendDigits(height);
+    sendNewLine();
+    AddNewItem (CreateListItem (CreateObstacle (MAX_X + x, y, height)));
 }
 
 void GameStart()
@@ -424,20 +462,8 @@ void GameStart()
     BaseIntu8 shift = 0;
 
     disableTimer();
-    addTask(createTask(subtileshifter, -1, 300));
     printStartMenu();
-    while(1)
-    {
-        
-        signal = readButton();
-        if (signal)
-        {
-            // _delay_ms(100);
-            OnButtonPressed(signal);
-        }
-    }
-
-    // this function never return
+    enableTimer();
 }
 
 void deleteAll()
@@ -460,17 +486,7 @@ void GameEnd()
     deleteAll();
     BaseIntu8 signal = 0;
     printEndMenu();
-    while(1)
-    {
-        signal = readButton();
-        if (signal)
-        {
-            // _delay_ms(100);
-            OnButtonPressed(signal);
-        }
-    }
-
-    // this function never return
+    enableTimer();
 }
 
 /*
@@ -490,19 +506,7 @@ void GameLooper(BaseIntu8 s)
     gameStatus = PLAYING;
     ProcessScreen();
     BaseIntu8 signal = 0;
-    // BaseIntu16 scaler = 0;
-    _delay_ms(200); // this is necessary to avoid double steps
     enableTimer();
-    while(1)
-    {
-        // scaler++;
-        signal = readButton();
-        if (signal)
-        {
-            // _delay_ms(100);
-            OnButtonPressed(signal);
-        }
-    }
 }
 
 void OnButtonPressed(BaseIntu8 s)

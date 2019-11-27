@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include "util/delay.h"
 
+// As the delay function should has a definite constant as its parameter
+// Choose the act as the wrapper
+#define delay_ms(x) _delay_ms(x)
+
 
 #define MAX_TASK 5
 
@@ -21,26 +25,24 @@ typedef struct taskItem
 
 static taskItem *TaskList[MAX_TASK] = {NULL};
 
-void init();
 void initIO();
-void initLCD();
-void initButtons();
-void initFPS();
-void initUSART();
-void initTimer();
 uint8_t readButton();
 void disableTimer();
 void enableTimer();
 void Sleep();
 void test_eeprom();
 void sendString(char const *s);
+void sendDigits(uint32_t d);
+void sendNewLine();
 void wirteEEPROM(void *p, uint8_t data);
 uint8_t readEEPROM(void *p);
 taskItem* createTask (void (*p)(), int16_t cycle, int16_t delay);
 uint8_t addTask(taskItem *task);
+void removeTask(uint8_t id);
 void deleteTask(taskItem *task);
 void testmemory();
-
+void LEDOn();
+void LEDOff();
 
 
 #define RIGHT 0x01

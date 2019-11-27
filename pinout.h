@@ -25,5 +25,8 @@
 #define FPS_IN PC0
 #define FPS_DDR DDRD
 
+#define LED PB5
+#define LEDDDR DDRB
+#define LEDPORT PORTB
 
 #endif

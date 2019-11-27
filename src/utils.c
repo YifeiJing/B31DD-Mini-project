@@ -18,6 +18,14 @@
 #include "lcd.h"
 #include "flappybird.h"
 
+// private decalarations
+void initLCD();
+void initButtons();
+void initFPS();
+void initUSART();
+void initLED();
+void initTimer();
+
 /* 
  * The system plans not to use interrupts to implement 
  * reactions, the pooling strategy will handle all of them.
@@ -29,7 +37,7 @@ void initIO()
     // initFPS();
     initUSART();
     initTimer();
-    sei();
+    initLED();
     disableTimer();
 }
 
@@ -55,13 +63,18 @@ void initLCD()
     Lcd4_Clear();
 }
 
+void initLED()
+{
+    LEDDDR |= _BV(LED);
+}
+
 void initFPS()
 {
     FPS_DDR &= ~(_BV(FPS_IN));
     // Configure ADC,  ADC0
-    ADMUX |= (1 << REFS0);
+    ADMUX |= _BV(REFS0);
     // ADC enable, prescaler 128
-    ADCSRA |= ((1 << ADEN)|(1 << ADPS2)|(1 << ADPS2)|(1 << ADPS0));
+    ADCSRA |= (_BV(ADEN)|_BV(ADPS2)|_BV(ADPS2)|_BV(ADPS0));
 }
 
 void initUSART()
@@ -69,12 +82,12 @@ void initUSART()
     // set baud rate
     UBRR0 = 16000000/16/9600 - 1;
     // Enable receive and transmit
-    UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0);
     // set frame format
     // 8 bits data, 1 stop bit, 0 parity bit
     // Asychronous USART
     // Default setting
-    UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+    UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
 }
 
 uint8_t readButton()
@@ -112,6 +125,29 @@ void sendString(char const *s)
         s++;
     }
     
+}
+
+void sendDigits(uint32_t d)
+{
+    int i = 1;
+    while (d/i)
+    {
+        i *= 10;
+    }
+    int tmp = d;
+    i /= 10;
+
+    while(i)
+    {
+        transmitByte('0' + tmp/i);
+        tmp -= (tmp/i) * i;
+        i /= 10;
+    }
+}
+
+void sendNewLine()
+{
+    transmitByte(0x0a);
 }
 
 uint16_t readADC()
@@ -171,6 +207,16 @@ ISR(TIMER2_OVF_vect)
     }
 }
 
+void LEDOn()
+{
+    LEDPORT |= _BV(LED);
+}
+
+void LEDOff()
+{
+    LEDPORT &= ~_BV(LED);
+}
+
 void disableTimer()
 {
     TCCR2B = 0;
@@ -180,6 +226,7 @@ void disableTimer()
 void enableTimer()
 {
     TCCR2B |= ((1<<CS22));
+    TCNT2 = 0;
     sei();
 }
 
@@ -239,6 +286,8 @@ uint8_t addTask(taskItem *task)
             return i;
         }
     }
+
+    return 0xFF;
 }
 
 void deleteTask(taskItem *task)
@@ -272,4 +321,10 @@ void testmemory()
         transmitByte('0' + tmp%10);
         tmp = tmp/10;
     }
+}
+
+void removeTask(uint8_t id)
+{
+    deleteTask(TaskList[id]);
+    TaskList[id] = NULL;
 }
