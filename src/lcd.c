@@ -1,104 +1,12 @@
+#include "pinout.h"
 #include "lcd.h"
-void pinChange(int a, int b)
+
+void pinChange(char port, char value)
 {
-	if(b == 0)
-	{
-		if(a == eS_PORTB0)
-		  PORTB &= ~(1<<PINB0);  
-		else if(a == eS_PORTB1)
-		  PORTB &= ~(1<<PINB1);
-		else if(a == eS_PORTB2)
-		  PORTB &= ~(1<<PINB2);  
-		else if(a == eS_PORTB3)
-		  PORTB &= ~(1<<PINB3);  
-		else if(a == eS_PORTB4)
-		  PORTB &= ~(1<<PINB4);  
-		else if(a == eS_PORTB5)
-		  PORTB &= ~(1<<PINB5);  
-		else if(a == eS_PORTB6)
-		  PORTB &= ~(1<<PINB6);  
-		else if(a == eS_PORTB7)
-		  PORTB &= ~(1<<PINB7);
-		else if(a == eS_PORTC0)
-		  PORTC &= ~(1<<PINC0);   
-		else if(a == eS_PORTC1)
-		  PORTC &= ~(1<<PINC1); 
-		else if(a == eS_PORTC2)
-		  PORTC &= ~(1<<PINC2);
-		else if(a == eS_PORTC3)
-		  PORTC &= ~(1<<PINC3);   
-		else if(a == eS_PORTC4)
-		  PORTC &= ~(1<<PINC4);  
-		else if(a == eS_PORTC5)
-		  PORTC &= ~(1<<PINC5);  
-        else if(a == eS_PORTC6)
-          PORTC &= ~(1<<PINC6);		
-		else if(a == eS_PORTD0)
-		  PORTD &= ~(1<<PIND0);
-		else if(a == eS_PORTD1)
-		  PORTD &= ~(1<<PIND1);  
-		else if(a == eS_PORTD2)
-		  PORTD &= ~(1<<PIND2);
-		else if(a == eS_PORTD3)
-		  PORTD &= ~(1<<PIND3);
-		else if(a == eS_PORTD4)
-		  PORTD &= ~(1<<PIND4);
-		else if(a == eS_PORTD5)
-		  PORTD &= ~(1<<PIND5);
-		else if(a == eS_PORTD6)
-		  PORTD &= ~(1<<PIND6);   
-		else if(a == eS_PORTD7)
-		  PORTD &= ~(1<<PIND7);           
-	}
+	if (value)
+		PORT |= _BV(port);
 	else
-	{
-		if(a == eS_PORTB0)
-	  	  PORTB |= (1<<PINB0);
-		else if(a == eS_PORTB1)
-		  PORTB |= (1<<PINB1);
-		else if(a == eS_PORTB2)
-		  PORTB |= (1<<PINB2);
-		else if(a == eS_PORTB3)
-		  PORTB |= (1<<PINB3);
-		else if(a == eS_PORTB4)
-		  PORTB |= (1<<PINB4);
-		else if(a == eS_PORTB5)
-		  PORTB |= (1<<PINB5);
-		else if(a == eS_PORTB6)
-		  PORTB |= (1<<PINB6);
-		else if(a == eS_PORTB7)
-		  PORTB |= (1<<PINB7);
-		else if(a == eS_PORTC0)
-		  PORTC |= (1<<PINC0);
-		else if(a == eS_PORTC1)
-		  PORTC |= (1<<PINC1);
-		else if(a == eS_PORTC2)
-	  	  PORTC |= (1<<PINC2);
-		else if(a == eS_PORTC3)
-		  PORTC |= (1<<PINC3);
-		else if(a == eS_PORTC4)
-		  PORTC |= (1<<PINC4);
-		else if(a == eS_PORTC5)
-		  PORTC |= (1<<PINC5);
-		else if(a == eS_PORTC6)
-		  PORTC |= (1<<PINC6);  
-		else if(a == eS_PORTD0)
-		  PORTD |= (1<<PIND0);
-		else if(a == eS_PORTD1)
-		  PORTD |= (1<<PIND1);
-		else if(a == eS_PORTD2)
-		  PORTD |= (1<<PIND2);
-		else if(a == eS_PORTD3)
-		  PORTD |= (1<<PIND3);
-		else if(a == eS_PORTD4)
-		  PORTD |= (1<<PIND4);
-		else if(a == eS_PORTD5)
-		  PORTD |= (1<<PIND5);
-		else if(a == eS_PORTD6)
-		  PORTD |= (1<<PIND6);
-		else if(a == eS_PORTD7)
-		  PORTD |= (1<<PIND7);
-	}
+		PORT &= ~_BV(port);
 }
 
 //LCD 4 Bit Interfacing Functions
@@ -125,6 +33,7 @@ void Lcd4_Port(char a)
 	else
 	pinChange(D7,0);
 }
+
 void Lcd4_Cmd(char a)
 {
 	pinChange(RS,0);             // => RS = 0

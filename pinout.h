@@ -10,6 +10,7 @@
 #define LCD_RS PC4
 #define LCD_EN PC5
 #define LCD_DDR DDRC
+#define LCD_PORT PORTC
 
 // BUTTON
 #define BUTTON_L PD7
