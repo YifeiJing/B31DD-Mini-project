@@ -16,9 +16,9 @@ int main()
 {
     // Hardware layer initialization
     initIO();
-    setFPS(30);
 
     // Software layer initialization
+    setFPS(30);
     InitGame();
     // test_eeprom();
     // testmemory();

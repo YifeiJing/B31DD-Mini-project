@@ -16,7 +16,7 @@
 #include <avr/eeprom.h>
 #include "pinout.h"
 #include "lcd.h"
-#include "flappybird.h"
+
 
 // private decalarations
 void initLCD();
@@ -159,13 +159,6 @@ uint16_t readADC()
 
 ISR(TIMER2_OVF_vect)
 {
-    counter++;
-    if (counter >= 560)
-    {
-        process();
-        ProcessScreen();
-        counter = 0;
-    }
     // Deal with tasks
     for (uint8_t i = 0; i < MAX_TASK; ++i)
     {

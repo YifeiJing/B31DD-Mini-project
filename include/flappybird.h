@@ -19,8 +19,6 @@
 #define SCORE_ADDR 0xF0
 
 static BaseIntu32 FPS = 0;
-static BaseIntu32 counter = 0;
-static BaseIntu32 tolerance = 0;
 
 enum type
 {

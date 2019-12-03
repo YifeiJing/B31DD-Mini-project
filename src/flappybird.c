@@ -196,6 +196,12 @@ static void printEndMenu()
     printString(2, "PLay Again[A] or Quit[B]?");
 }
 
+static void update()
+{
+    process();
+    ProcessScreen();
+}
+
 /******************************************************************************/
 
 void subtileshifter()
@@ -402,8 +408,9 @@ void InitGame()
     tail = head;
     Bird = head->obj;
     InitObstacles();
-    addTask(createTask(subtileshifter, -1, 300));
-    addTask(createTask(buttonPressTask, -1, 0));
+    addTask(createTask(update, -1, 560));
+    addTask(createTask(subtileshifter, -1, 200));
+    addTask(createTask(buttonPressTask, -1, FPS));
     GameStart();
 }
 
@@ -444,7 +451,8 @@ void AddNewObstacle()
     if (MAX_X + x == tail->obj->x + 1) x++;
     y = rand() % (MAX_DEPTH - 5);
     height = 5 + rand() % (MAX_DEPTH - 5 - y);
-    
+
+#ifdef DEBUG    
     sendString("Creat new abstacle: x :");
     sendDigits(MAX_X + x);
     sendString(" y:");
@@ -452,6 +460,7 @@ void AddNewObstacle()
     sendString(" height:");
     sendDigits(height);
     sendNewLine();
+#endif
     AddNewItem (CreateListItem (CreateObstacle (MAX_X + x, y, height)));
 }
 

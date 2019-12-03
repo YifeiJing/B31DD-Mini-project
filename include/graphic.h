@@ -12,7 +12,6 @@
 #ifndef GRAPHIC_H
 #define GRAPHIC_H
 
-#include "flappybird.h"
 
 void printBird(Object *bird);
 void printObstacle(Object *obstacle, Object *bird);

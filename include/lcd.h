@@ -12,9 +12,6 @@
 #define PORT LCD_PORT
 
 
-#include <avr/io.h>
-#include<util/delay.h>
-
 void pinChange(char a, char b);
 void Lcd4_Port(char a);
 void Lcd4_Cmd(char a);

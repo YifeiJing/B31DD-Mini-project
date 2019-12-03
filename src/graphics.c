@@ -9,7 +9,7 @@
 *	@author Yifei Jing	yj10@hw.ac.uk
 *	@date	16/11/19
 **********************************************************/
-
+#include "flappybird.h"
 #include "lcd.h"
 #include "graphic.h"
 
