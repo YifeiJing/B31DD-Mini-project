@@ -147,7 +147,7 @@ static void onButtonPressed_B()
     case PLAYING:
         break;
     case END:
-        InitGame();
+        GameStart();
         break;
     
     default:
@@ -200,6 +200,10 @@ static void update()
 {
     process();
     ProcessScreen();
+#ifdef DEBUG
+    sendString("update routine success");
+    sendNewLine();
+#endif
 }
 
 /******************************************************************************/
@@ -213,6 +217,10 @@ void subtileshifter()
 
     InterruptState lastState = disableTimer();
     screenShiftLeft();
+#ifdef DEBUG
+    sendString("shift routine success");
+    sendNewLine();
+#endif
     backToLastInter(lastState);
 }
 
@@ -237,7 +245,7 @@ void process()
     
     ObListItem *tmp = head;
 
-    for (; tmp != tail; tmp = tmp->next)
+    for (; tmp != NULL; tmp = tmp->next)
     {
         if (tmp->obj->type == BIRD)
         {
@@ -248,7 +256,21 @@ void process()
         }
         else if (tmp->obj->type == OBSTACLE)
         {
+#ifdef DEBUG
+    sendString("processing stacle: ");
+    sendDigits(tmp->obj->x);
+    sendString(", ");
+    sendDigits(tmp->obj->y);
+    sendNewLine();
+#endif
             tmp->obj->x--;
+#ifdef DEBUG
+    sendString("move stacle to:");
+    sendDigits(tmp->obj->x);
+    sendString(", ");
+    sendDigits(tmp->obj->y);
+    sendNewLine();
+#endif
             // if the current processing item has moved out of screen
             if (tmp->obj->x == 0xFF)
             {
@@ -292,7 +314,13 @@ Object *CreateObstacle(BaseIntu8 x, BaseIntu8 y, BaseIntu8 height)
     tmp->x = x;
     tmp->y = y;
     tmp->height = height;
-
+#ifdef DEBUG
+    sendString("creating Obstacle: ");
+    sendDigits(tmp->x);
+    sendString(", ");
+    sendDigits(tmp->y);
+    sendNewLine();
+#endif
     return tmp;
 }
 
@@ -310,6 +338,15 @@ ObListItem *CreateListItem(Object *obj)
 {
     ObListItem *tmp = (ObListItem*) malloc(sizeof(ObListItem));
     tmp->obj = obj;
+    tmp->next = NULL;
+    tmp->pre = NULL;
+#ifdef DEBUG
+    sendString("creating list item: ");
+    sendDigits(tmp->obj->x);
+    sendString(", ");
+    sendDigits(tmp->obj->y);
+    sendNewLine();
+#endif
     return tmp;
 }
 
@@ -328,11 +365,13 @@ void ProcessScreen()
     {
         return;
     }
+
+    BaseIntu8 counter = 0;
     
     ObListItem *tmp = head;
 
     ClearScreen();
-    for ( ; tmp != tail; tmp = tmp->next)
+    for ( ; counter != 4 && tmp != NULL; tmp = tmp->next, ++counter)
     {
         if (tmp->obj->type == BIRD)
         {
@@ -340,6 +379,13 @@ void ProcessScreen()
         }
         else if (tmp->obj->type == OBSTACLE)
         {
+#ifdef DEBUG
+    sendString("screening Obstacle: ");
+    sendDigits(tmp->obj->x);
+    sendString(", ");
+    sendDigits(tmp->obj->y);
+    sendNewLine();
+#endif
             if (tmp->pre->obj == Bird && tmp->obj->x == Bird->x)
             {
                 printObstacle (tmp->obj, Bird);
@@ -387,16 +433,15 @@ void InitGame()
     InterruptState lastState = disableTimer();
     printInit();
     srand(123456);
-    LEDOff();
-    head = CreateListItem(CreateBird());
-    tail = head;
-    Bird = head->obj;
-    InitObstacles();
     addTask(createTask(update, -1, 560));
     addTask(createTask(subtileshifter, -1, 300));
     addTask(createTask(buttonPressTask, -1, FPS));
-    backToLastInter(lastState);
+#ifdef DEBUG
+    sendString("tasks added success");
+    sendNewLine();
+#endif
     GameStart();
+    backToLastInter(lastState);
 }
 
 void InitObstacles()
@@ -417,6 +462,7 @@ void InitObstacles()
     for (int i = 1; i <= 3; ++i)
     {
         x = interval * i + rand() % interval;
+        if (x == tail->obj->x + 1) x++;
         y = rand() % (MAX_DEPTH - 5);
         height = 5 + rand() % (MAX_DEPTH - 5 - y);
         AddNewItem (CreateListItem (CreateObstacle (x, y, height)));
@@ -455,6 +501,15 @@ void GameStart()
     gameStatus = BEGIN;
 
     printStartMenu();
+    LEDOff();
+    head = CreateListItem(CreateBird());
+    tail = head;
+    Bird = head->obj;
+    InitObstacles();
+#ifdef DEBUG
+    sendString("game start success");
+    sendNewLine();
+#endif
     backToLastInter(lastState);
     // enableTimer();
 }
@@ -479,7 +534,6 @@ void GameEnd()
     deleteAll();
     printEndMenu();
     backToLastInter(lastState);
-    // enableTimer();
 }
 
 /*
@@ -501,6 +555,10 @@ void GameLooper(BaseIntu8 s)
     score = 0;
     gameStatus = PLAYING;
     ProcessScreen();
+#ifdef DEBUG
+    sendString("looper init success");
+    sendNewLine();
+#endif
     backToLastInter(lastState);
 }
 
@@ -515,5 +573,4 @@ void OnButtonPressed(BaseIntu8 s)
     if (s & A) onButtonPressed_A();
     if (s & B) onButtonPressed_B();
     backToLastInter(lastState);
-    // enableTimer();
 }

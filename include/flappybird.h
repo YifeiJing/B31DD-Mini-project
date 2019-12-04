@@ -11,7 +11,7 @@
 **********************************************************/
 #ifndef FLAPPYBIRD_H
 #define FLAPPYBIRD_H
-
+// #define DEBUG
 #include "types.h"
 #define MAX_DEPTH 16
 #define MAX_X 16

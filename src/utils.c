@@ -36,7 +36,9 @@ void initIO()
     initButtons();
     initLCD();
     // initFPS();
+#ifdef DEBUG
     initUSART();
+#endif
     initTimer();
     initLED();
     enableTimer();
@@ -130,6 +132,11 @@ void sendString(char const *s)
 
 void sendDigits(uint32_t d)
 {
+    if (d == 0)
+    {
+        transmitByte('0');
+        return;
+    }
     int i = 1;
     while (d/i)
     {
@@ -160,6 +167,7 @@ uint16_t readADC()
 
 ISR(TIMER2_OVF_vect)
 {
+    current_interState = DISABLED;
     // Deal with tasks
     for (uint8_t i = 0; i < MAX_TASK; ++i)
     {
@@ -199,6 +207,7 @@ ISR(TIMER2_OVF_vect)
             }   
         }
     }
+    current_interState = ENABLED;
 }
 
 void LEDOn()
@@ -213,25 +222,41 @@ void LEDOff()
 
 InterruptState disableTimer()
 {
+#ifdef DEBUG
+    sendString("DisableTimer called");
+    sendNewLine();
+#endif
     if (current_interState == DISABLED) return DISABLED;
     TCCR2B = 0;
     cli();
     current_interState = DISABLED;
+#ifdef DEBUG
+    sendString("Timer disabled");
+    sendNewLine();
+#endif
     return ENABLED;
 }
 
 void backToLastInter(InterruptState lastState)
 {
-    if (lastState) enableTimer();
+    if (lastState == ENABLED) enableTimer();
     else disableTimer();
 }
 
 InterruptState enableTimer()
 {
-    if (current_interState) return ENABLED;
+#ifdef DEBUG
+    sendString("Enable Timer called");
+    sendNewLine();
+#endif
+    if (current_interState == ENABLED) return ENABLED;
     TCCR2B |= ((1<<CS22));
     TCNT2 = 0;
     current_interState = ENABLED;
+#ifdef DEBUG
+    sendString("Timer enabled");
+    sendNewLine();
+#endif
     sei();
     return DISABLED;
 }
