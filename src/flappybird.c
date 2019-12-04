@@ -208,28 +208,12 @@ void subtileshifter()
 {
     if (gameStatus == PLAYING)
     {
-        // counter = 0;
         return;
     }
 
-    // static uint8_t counter = 0;
-
-    // if (counter == 20)
-    //     counter = 0;
-
-    // if (counter < 10)
-    // {
-    //     screenShiftLeft();
-    // }
-    // else if (counter >= 10)
-    // {
-    //     screenShiftRight();
-    // }
-
-    // counter++;
-    disableTimer();
+    InterruptState lastState = disableTimer();
     screenShiftLeft();
-    enableTimer();
+    backToLastInter(lastState);
 }
 
 void buttonPressTask()
@@ -400,7 +384,7 @@ void AddNewItem(ObListItem *Item)
 
 void InitGame()
 {
-    disableTimer();
+    InterruptState lastState = disableTimer();
     printInit();
     srand(123456);
     LEDOff();
@@ -409,8 +393,9 @@ void InitGame()
     Bird = head->obj;
     InitObstacles();
     addTask(createTask(update, -1, 560));
-    addTask(createTask(subtileshifter, -1, 200));
+    addTask(createTask(subtileshifter, -1, 300));
     addTask(createTask(buttonPressTask, -1, FPS));
+    backToLastInter(lastState);
     GameStart();
 }
 
@@ -466,13 +451,12 @@ void AddNewObstacle()
 
 void GameStart()
 {
+    InterruptState lastState = disableTimer();
     gameStatus = BEGIN;
-    BaseIntu8 signal = 0;
-    BaseIntu8 shift = 0;
 
-    disableTimer();
     printStartMenu();
-    enableTimer();
+    backToLastInter(lastState);
+    // enableTimer();
 }
 
 void deleteAll()
@@ -490,12 +474,12 @@ void deleteAll()
 
 void GameEnd()
 {
-    disableTimer();
+    InterruptState lastState = disableTimer();
     gameStatus = END;
     deleteAll();
-    BaseIntu8 signal = 0;
     printEndMenu();
-    enableTimer();
+    backToLastInter(lastState);
+    // enableTimer();
 }
 
 /*
@@ -503,6 +487,9 @@ void GameEnd()
  */
 void GameLooper(BaseIntu8 s)
 {
+    InterruptState lastState = disableTimer();
+
+    speed = 1;
     if (s)
     {
         printInit();
@@ -514,18 +501,19 @@ void GameLooper(BaseIntu8 s)
     score = 0;
     gameStatus = PLAYING;
     ProcessScreen();
-    BaseIntu8 signal = 0;
-    enableTimer();
+    backToLastInter(lastState);
 }
 
 void OnButtonPressed(BaseIntu8 s)
 {
-    disableTimer();
+    InterruptState lastState = disableTimer();
+
     if (s & UP) onButtonPressed_U();
     if (s & DOWN) onButtonPressed_D();
     if (s & LEFT) onButtonPressed_L();
     if (s & RIGHT) onButtonPressed_R();
     if (s & A) onButtonPressed_A();
     if (s & B) onButtonPressed_B();
-    enableTimer();
+    backToLastInter(lastState);
+    // enableTimer();
 }

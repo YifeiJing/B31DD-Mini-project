@@ -17,6 +17,7 @@
 #include "pinout.h"
 #include "lcd.h"
 
+static InterruptState current_interState = DISABLED;
 
 // private decalarations
 void initLCD();
@@ -38,7 +39,7 @@ void initIO()
     initUSART();
     initTimer();
     initLED();
-    disableTimer();
+    enableTimer();
 }
 
 void initButtons()
@@ -210,17 +211,29 @@ void LEDOff()
     LEDPORT &= ~_BV(LED);
 }
 
-void disableTimer()
+InterruptState disableTimer()
 {
+    if (current_interState == DISABLED) return DISABLED;
     TCCR2B = 0;
     cli();
+    current_interState = DISABLED;
+    return ENABLED;
 }
 
-void enableTimer()
+void backToLastInter(InterruptState lastState)
 {
+    if (lastState) enableTimer();
+    else disableTimer();
+}
+
+InterruptState enableTimer()
+{
+    if (current_interState) return ENABLED;
     TCCR2B |= ((1<<CS22));
     TCNT2 = 0;
+    current_interState = ENABLED;
     sei();
+    return DISABLED;
 }
 
 void Sleep()

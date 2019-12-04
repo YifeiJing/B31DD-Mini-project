@@ -25,10 +25,17 @@ typedef struct taskItem
 
 static taskItem *TaskList[MAX_TASK] = {NULL};
 
+typedef enum interruptState
+{
+    ENABLED,
+    DISABLED
+} InterruptState;
+
 void initIO();
 uint8_t readButton();
-void disableTimer();
-void enableTimer();
+InterruptState disableTimer();
+InterruptState enableTimer();
+void backToLastInter(InterruptState);
 void Sleep();
 void test_eeprom();
 void sendString(char const *s);
