@@ -291,6 +291,18 @@ void process()
     }
 }
 
+void changeGameSpeedTask()
+{
+    // the Game speed will range from 300 to 800
+    GameSpeed = readSpeed()/1024.0 * 500 + 300;
+}
+
+void changeFPS()
+{
+    // the FPS will range from 5 to 50
+    setFPS(readFPS()/1024.0 * 45 + 5);
+}
+
 /*
  * bird will only be create at the start
  * of the game, and it will always be created
@@ -433,7 +445,7 @@ void InitGame()
     InterruptState lastState = disableTimer();
     printInit();
     srand(123456);
-    addTask(createTask(update, -1, 560));
+    addTask(createTask(update, -1, GameSpeed));
     addTask(createTask(subtileshifter, -1, 300));
     addTask(createTask(buttonPressTask, -1, FPS));
 #ifdef DEBUG
@@ -511,7 +523,6 @@ void GameStart()
     sendNewLine();
 #endif
     backToLastInter(lastState);
-    // enableTimer();
 }
 
 void deleteAll()
@@ -573,4 +584,15 @@ void OnButtonPressed(BaseIntu8 s)
     if (s & A) onButtonPressed_A();
     if (s & B) onButtonPressed_B();
     backToLastInter(lastState);
+}
+
+void setGameSpeed(BaseIntu32 speed)
+{
+    GameSpeed = speed;
+#ifdef DEBUG
+sendString("Set game speed: ");
+sendDigits(speed);
+sendNewLine();
+#endif
+
 }

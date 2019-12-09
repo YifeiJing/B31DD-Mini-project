@@ -24,7 +24,9 @@
 
 // FPS
 #define FPS_IN PC0
-#define FPS_DDR DDRD
+#define FPS_DDR DDRC
+#define SPEED_IN PC1
+#define SPEED_DDR DDRC
 
 #define LED PB5
 #define LEDDDR DDRB

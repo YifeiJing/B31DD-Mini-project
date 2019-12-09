@@ -19,6 +19,7 @@
 #define SCORE_ADDR 0xF0
 
 static BaseIntu32 FPS = 0;
+static BaseIntu32 GameSpeed = 500;
 
 enum type
 {
@@ -85,5 +86,6 @@ void GameLooper(BaseIntu8 s);
 void OnButtonPressed(BaseIntu8 s);
 void setFPS(uint16_t newFPS);
 void subtileshifter();
+void setGameSpeed(BaseIntu32);
 
 #endif

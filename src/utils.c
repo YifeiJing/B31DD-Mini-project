@@ -26,6 +26,7 @@ void initFPS();
 void initUSART();
 void initLED();
 void initTimer();
+uint16_t readADC(uint8_t);
 
 /* 
  * The system plans not to use interrupts to implement 
@@ -74,6 +75,7 @@ void initLED()
 void initFPS()
 {
     FPS_DDR &= ~(_BV(FPS_IN));
+    SPEED_DDR &= ~(_BV(SPEED_IN));
     // Configure ADC,  ADC0
     ADMUX |= _BV(REFS0);
     // ADC enable, prescaler 128
@@ -158,8 +160,27 @@ void sendNewLine()
     transmitByte(0x0a);
 }
 
-uint16_t readADC()
+uint16_t readFPS()
 {
+    return readADC(0);
+}
+
+uint16_t readSpeed()
+{
+    return readADC(1);
+}
+
+uint16_t readADC(uint8_t select)
+{
+    if (select)
+    {
+        ADMUX |= _BV(MUX0);
+    }
+    else
+    {
+        ADMUX &= ~_BV(MUX0);
+    }
+    
     ADCSRA |= _BV(ADSC);
     loop_until_bit_is_clear(ADCSRA, ADSC);
     return ADC;

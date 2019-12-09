@@ -18,7 +18,8 @@ int main()
     initIO();
 
     // Software layer initialization
-    setFPS(30);
+    setFPS(8);
+    setGameSpeed(500);
     InitGame();
     // test_eeprom();
     // testmemory();

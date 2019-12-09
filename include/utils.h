@@ -51,6 +51,8 @@ void deleteTask(taskItem *task);
 void testmemory();
 void LEDOn();
 void LEDOff();
+uint16_t readFPS();
+uint16_t readSpeed();
 
 
 #define RIGHT 0x01
