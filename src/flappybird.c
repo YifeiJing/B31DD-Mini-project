@@ -261,7 +261,7 @@ void process()
         {
             if (gameStatus == GOD)
             {
-                BaseIntu8 dest_y = tmp->next->obj->y + 1;
+                BaseIntu8 dest_y = tmp->next->obj->y + tmp->next->obj->height - 4;
                 BaseIntu8 dest_x = tmp->next->obj->x;
                 if (Bird->x != dest_x && Bird->x + 3 >= dest_x)
                 {
