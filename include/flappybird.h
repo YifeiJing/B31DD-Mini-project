@@ -32,7 +32,8 @@ enum status
 {
     BEGIN = 0,
     PLAYING,
-    END
+    END,
+    GOD
 };
 typedef enum status Status;
 

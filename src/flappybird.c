@@ -131,7 +131,9 @@ static void onButtonPressed_A()
     case END:
         GameLooper(1);
         break;
-    
+    case GOD:
+        gameStatus = PLAYING;
+        break;
     default:
         break;
     }
@@ -149,10 +151,18 @@ static void onButtonPressed_B()
     case END:
         GameStart();
         break;
-    
+    case GOD:
+        gameStatus = PLAYING;
+        break;
     default:
         break;
     }
+}
+
+static void onButtonPressed_AB()
+{
+    if (gameStatus == PLAYING)
+        gameStatus = GOD;
 }
 
 /* -------------- User Interfaces ---------------- */
@@ -210,7 +220,7 @@ static void update()
 
 void subtileshifter()
 {
-    if (gameStatus == PLAYING)
+    if (gameStatus == PLAYING || gameStatus == GOD)
     {
         return;
     }
@@ -238,7 +248,7 @@ void buttonPressTask()
  * */
 void process()
 {
-    if (gameStatus != PLAYING)
+    if (gameStatus != PLAYING && gameStatus != GOD)
     {
         return;
     }
@@ -249,6 +259,11 @@ void process()
     {
         if (tmp->obj->type == BIRD)
         {
+            if (gameStatus == GOD)
+            {
+                Bird->y = tmp->next->obj->y + 1;
+                continue;
+            }
             tmp->obj->y -= speed;
             speed = speed == MAX_SPEED ? MAX_SPEED : speed + 1;
             if (tmp->obj->y >= MAX_DEPTH)
@@ -373,7 +388,7 @@ void setFPS(BaseIntu16 newFPS)
  */
 void ProcessScreen()
 {
-    if (gameStatus != PLAYING)
+    if (gameStatus != PLAYING && gameStatus != GOD)
     {
         return;
     }
@@ -577,12 +592,13 @@ void OnButtonPressed(BaseIntu8 s)
 {
     InterruptState lastState = disableTimer();
 
-    if (s & UP) onButtonPressed_U();
-    if (s & DOWN) onButtonPressed_D();
-    if (s & LEFT) onButtonPressed_L();
-    if (s & RIGHT) onButtonPressed_R();
-    if (s & A) onButtonPressed_A();
-    if (s & B) onButtonPressed_B();
+    if (s & A && s & B) onButtonPressed_AB();
+    else if (s & UP) onButtonPressed_U();
+    else if (s & DOWN) onButtonPressed_D();
+    else if (s & LEFT) onButtonPressed_L();
+    else if (s & RIGHT) onButtonPressed_R();
+    else if (s & A) onButtonPressed_A();
+    else if (s & B) onButtonPressed_B();
     backToLastInter(lastState);
 }
 
