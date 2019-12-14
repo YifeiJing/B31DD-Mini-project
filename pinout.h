@@ -3,14 +3,14 @@
 // WARNING: THIS SHOULD BE INCLUDED BEFORE lcd.h // 
 
 // LCD
-#define LCD0 PC0
-#define LCD1 PC1
-#define LCD2 PC2
-#define LCD3 PC3
-#define LCD_RS PC4
-#define LCD_EN PC5
-#define LCD_DDR DDRC
-#define LCD_PORT PORTC
+#define LCD0 PB3
+#define LCD1 PB2
+#define LCD2 PB1
+#define LCD3 PB0
+#define LCD_RS PB4
+#define LCD_EN PB5
+#define LCD_DDR DDRB
+#define LCD_PORT PORTB
 
 // BUTTON
 #define BUTTON_L PD7
@@ -28,8 +28,8 @@
 #define SPEED_IN PC1
 #define SPEED_DDR DDRC
 
-#define LED PB5
-#define LEDDDR DDRB
-#define LEDPORT PORTB
+#define LED PC5
+#define LEDDDR DDRC
+#define LEDPORT PORTC
 
 #endif
