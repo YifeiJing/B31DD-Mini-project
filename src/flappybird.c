@@ -261,8 +261,18 @@ void process()
         {
             if (gameStatus == GOD)
             {
-                Bird->y = tmp->next->obj->y + 1;
-                continue;
+                BaseIntu8 dest_y = tmp->next->obj->y + 1;
+                BaseIntu8 dest_x = tmp->next->obj->x;
+                if (Bird->x == dest_x - 1)
+                {
+                    Bird->y = dest_y + 1;
+                    speed = 1;
+                }
+                else if (Bird->y - speed < 0)
+                {
+                    Bird->y = dest_y;
+                    speed = 1;
+                }
             }
             tmp->obj->y -= speed;
             speed = speed == MAX_SPEED ? MAX_SPEED : speed + 1;
@@ -506,7 +516,7 @@ void AddNewObstacle()
     BaseIntu8 x, y, height;
     BaseIntu8 const interval = MAX_X / 4;
     x = rand() % interval;
-    if (MAX_X + x == tail->obj->x + 1) x++;
+    if (MAX_X + x <= tail->obj->x + 1) x = tail->obj->x + 2 - MAX_X;
     y = rand() % (MAX_DEPTH - 5);
     height = 5 + rand() % (MAX_DEPTH - 5 - y);
 
