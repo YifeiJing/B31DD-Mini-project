@@ -1,6 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
-#define DEBUG
+// #define DEBUG
 
 #include <avr/io.h>
 #include <stdlib.h>

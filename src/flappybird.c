@@ -263,14 +263,25 @@ void process()
             {
                 BaseIntu8 dest_y = tmp->next->obj->y + 1;
                 BaseIntu8 dest_x = tmp->next->obj->x;
-                if (Bird->x == dest_x - 1)
+                if (Bird->x != dest_x && Bird->x + 3 >= dest_x)
                 {
-                    Bird->y = dest_y + 1;
-                    speed = 1;
+                    if (Bird->y < dest_y + 1)
+                    {
+                        while (Bird->y != dest_y + 1)
+                        {
+                            Bird->y++;
+                            printBird(Bird);
+                        }
+                        speed = 1;
+                    }
                 }
                 else if (Bird->y - speed < 0)
                 {
-                    Bird->y = dest_y;
+                    while (Bird->y != dest_y)
+                    {
+                        Bird->y++;
+                        printBird(Bird);
+                    }
                     speed = 1;
                 }
             }
