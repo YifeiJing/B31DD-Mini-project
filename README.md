@@ -30,6 +30,8 @@ To flash to the board (also contains the process of compilation, if it has not b
 ------
 # Cricuit
 The configurations of the board are included in the **pinout.h** at the root directory. Make sure your circuit has been connected according to the definitions in this file, or you can simplely edit it to adapt to your condition.
+A sample connection is provided below:
+![Sample circuit](img/circuit.png)
 
 -----
 # Descriptions
