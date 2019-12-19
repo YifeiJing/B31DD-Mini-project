@@ -624,7 +624,7 @@ void godModeProcess()
         BaseIntu8 dest_x = head->next->obj->x;
         if (Bird->x != dest_x && Bird->x + 3 >= dest_x)
         {
-            if (Bird->y + loftspeed <= dest_y + 1 || Bird->y <= head->next->obj->y + 1)
+            if (Bird->y + loftspeed <= dest_y + 1 || Bird->y - speed <= head->next->obj->y)
             {
                 // while (Bird->y != dest_y + 1)
                 // {
