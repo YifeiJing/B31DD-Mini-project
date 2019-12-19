@@ -19,7 +19,7 @@ int main()
 
     // Software layer initialization
     setFPS(8);
-    setGameSpeed(500);
+    setGameSpeed(400);
     InitGame();
     // test_eeprom();
     // testmemory();

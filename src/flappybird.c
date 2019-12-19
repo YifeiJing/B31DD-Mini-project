@@ -17,12 +17,15 @@
 #include <stdlib.h>
 
 #define VERTCENTER 2
+#define HIGHEST_GAME_SPEED 200
+#define LOWEST_FPS 5
 
 static ObListItem *head, *tail;
 static Object *Bird;
 static Status gameStatus = BEGIN;
 static BaseIntu16 score = 0;
-static BaseIntu8 speed = 1;
+static BaseIntu8 speed = 1, loftspeed = 1;
+static BaseIntu8 updateTaskId, buttonTaskId;
 
 /******************************************************************************/
 /***************************** private functions ******************************/
@@ -40,7 +43,7 @@ static void onButtonPressed_L()
         break;
     case END:
         break;
-    
+
     default:
         break;
     }
@@ -57,7 +60,7 @@ static void onButtonPressed_R()
         break;
     case END:
         break;
-    
+
     default:
         break;
     }
@@ -72,10 +75,14 @@ static void onButtonPressed_U()
         break;
     case PLAYING:
         speed = 1;
-        if (Bird->y+3 != MAX_DEPTH - 1) Bird->y++;
-        if (Bird->x == head->next->obj->x) 
+        if (Bird->y + 3 <= MAX_DEPTH - 1)
         {
-            CheckHeight(head->next);
+            Bird->y += loftspeed;
+            loftspeed = loftspeed >= MAX_LOFT_SPEED ? MAX_LOFT_SPEED : loftspeed + 1;
+        }
+        if (Bird->x == head->next->obj->x)
+        {
+            CheckHeight(head->next, 0);
             ProcessScreen();
         }
         else
@@ -85,7 +92,7 @@ static void onButtonPressed_U()
         break;
     case END:
         break;
-    
+
     default:
         break;
     }
@@ -102,7 +109,7 @@ static void onButtonPressed_D()
         break;
     case END:
         break;
-    
+
     default:
         break;
     }
@@ -117,10 +124,14 @@ static void onButtonPressed_A()
         break;
     case PLAYING:
         speed = 1;
-        if (Bird->y+3 != MAX_DEPTH - 1) Bird->y++;
-        if (Bird->x == head->next->obj->x) 
+        if (Bird->y + 3 <= MAX_DEPTH - 1)
         {
-            CheckHeight(head->next);
+            Bird->y += loftspeed;
+            loftspeed = loftspeed >= MAX_LOFT_SPEED ? MAX_LOFT_SPEED : loftspeed + 1;
+        }
+        if (Bird->x == head->next->obj->x)
+        {
+            CheckHeight(head->next, 0);
             ProcessScreen();
         }
         else
@@ -185,16 +196,16 @@ static void printEndMenu()
     printString(1, "Your Score: ");
     printDigits(1, 12, score);
     BaseIntu16 highestscore = readEEPROM(SCORE_ADDR);
-    highestscore |= (readEEPROM(SCORE_ADDR+1) << 8);
+    highestscore |= (readEEPROM(SCORE_ADDR + 1) << 8);
     if (score > highestscore)
     {
         wirteEEPROM(SCORE_ADDR, score);
-        wirteEEPROM(SCORE_ADDR+1, score >> 8);
+        wirteEEPROM(SCORE_ADDR + 1, score >> 8);
     }
     printString(2, "Highest:");
     printDigits(2, 9, highestscore);
     // delay_ms(4000);
-    while(1)
+    while (1)
     {
         uint8_t signal = readButton();
         if (signal)
@@ -239,6 +250,14 @@ void buttonPressTask()
     BaseIntu8 signal = readButton();
     if (signal)
         OnButtonPressed(signal);
+    godModeProcess();
+}
+
+void addDifficulty()
+{
+    // the difficulty should be controled by the game speed
+    setGameSpeed(GameSpeed - 10);
+    changeTaskDelay(updateTaskId, GameSpeed);
 }
 
 /*
@@ -252,60 +271,35 @@ void process()
     {
         return;
     }
-    
+
     ObListItem *tmp = head;
 
     for (; tmp != NULL; tmp = tmp->next)
     {
         if (tmp->obj->type == BIRD)
         {
-            if (gameStatus == GOD)
-            {
-                BaseIntu8 dest_y = tmp->next->obj->y + tmp->next->obj->height - 4;
-                BaseIntu8 dest_x = tmp->next->obj->x;
-                if (Bird->x != dest_x && Bird->x + 3 >= dest_x)
-                {
-                    if (Bird->y < dest_y + 1)
-                    {
-                        while (Bird->y != dest_y + 1)
-                        {
-                            Bird->y++;
-                            printBird(Bird);
-                        }
-                        speed = 1;
-                    }
-                }
-                else if (Bird->y - speed < 0)
-                {
-                    while (Bird->y != dest_y)
-                    {
-                        Bird->y++;
-                        printBird(Bird);
-                    }
-                    speed = 1;
-                }
-            }
             tmp->obj->y -= speed;
             speed = speed == MAX_SPEED ? MAX_SPEED : speed + 1;
+            loftspeed = 1;
             if (tmp->obj->y >= MAX_DEPTH)
                 GameEnd();
         }
         else if (tmp->obj->type == OBSTACLE)
         {
 #ifdef DEBUG
-    sendString("processing stacle: ");
-    sendDigits(tmp->obj->x);
-    sendString(", ");
-    sendDigits(tmp->obj->y);
-    sendNewLine();
+            sendString("processing stacle: ");
+            sendDigits(tmp->obj->x);
+            sendString(", ");
+            sendDigits(tmp->obj->y);
+            sendNewLine();
 #endif
             tmp->obj->x--;
 #ifdef DEBUG
-    sendString("move stacle to:");
-    sendDigits(tmp->obj->x);
-    sendString(", ");
-    sendDigits(tmp->obj->y);
-    sendNewLine();
+            sendString("move stacle to:");
+            sendDigits(tmp->obj->x);
+            sendString(", ");
+            sendDigits(tmp->obj->y);
+            sendNewLine();
 #endif
             // if the current processing item has moved out of screen
             if (tmp->obj->x == 0xFF)
@@ -314,14 +308,15 @@ void process()
                 tmp->pre->next = tmp->next;
                 tmp->next->pre = tmp->pre;
                 DeleteObj(tmp->obj);
-                DeleteListItem (tmp);
+                DeleteListItem(tmp);
                 tmp = tmp2;
                 // After deletion, add a new obstacle
                 AddNewObstacle();
             }
             else if (tmp->obj->x == Bird->x)
             {
-                CheckHeight(tmp);
+                CheckHeight(tmp, 1);
+                // score increase
             }
         }
     }
@@ -330,13 +325,15 @@ void process()
 void changeGameSpeedTask()
 {
     // the Game speed will range from 300 to 800
-    GameSpeed = readSpeed()/1024.0 * 500 + 300;
+    GameSpeed = readSpeed() / 1024.0 * 500 + HIGHEST_GAME_SPEED;
+    changeTaskDelay(updateTaskId, GameSpeed);
 }
 
 void changeFPS()
 {
     // the FPS will range from 5 to 50
-    setFPS(readFPS()/1024.0 * 45 + 5);
+    setFPS(readFPS() / 1024.0 * 45 + LOWEST_FPS);
+    changeTaskDelay(buttonTaskId, FPS);
 }
 
 /*
@@ -347,7 +344,7 @@ void changeFPS()
  * */
 Object *CreateBird()
 {
-    Object *tmp = (Object*) malloc(sizeof(Object));
+    Object *tmp = (Object *)malloc(sizeof(Object));
     tmp->type = BIRD;
     tmp->x = 0;
     tmp->y = 5;
@@ -357,7 +354,7 @@ Object *CreateBird()
 
 Object *CreateObstacle(BaseIntu8 x, BaseIntu8 y, BaseIntu8 height)
 {
-    Object *tmp = (Object*) malloc(sizeof(Object));
+    Object *tmp = (Object *)malloc(sizeof(Object));
     tmp->type = OBSTACLE;
     tmp->x = x;
     tmp->y = y;
@@ -384,7 +381,7 @@ void DeleteListItem(ObListItem *item)
 
 ObListItem *CreateListItem(Object *obj)
 {
-    ObListItem *tmp = (ObListItem*) malloc(sizeof(ObListItem));
+    ObListItem *tmp = (ObListItem *)malloc(sizeof(ObListItem));
     tmp->obj = obj;
     tmp->next = NULL;
     tmp->pre = NULL;
@@ -415,42 +412,44 @@ void ProcessScreen()
     }
 
     BaseIntu8 counter = 0;
-    
+
     ObListItem *tmp = head;
 
     ClearScreen();
-    for ( ; counter != 4 && tmp != NULL; tmp = tmp->next, ++counter)
+    for (; counter != 4 && tmp != NULL; tmp = tmp->next, ++counter)
     {
         if (tmp->obj->type == BIRD)
         {
-            printBird (tmp->obj);
+            printBird(tmp->obj);
         }
         else if (tmp->obj->type == OBSTACLE)
         {
 #ifdef DEBUG
-    sendString("screening Obstacle: ");
-    sendDigits(tmp->obj->x);
-    sendString(", ");
-    sendDigits(tmp->obj->y);
-    sendNewLine();
+            sendString("screening Obstacle: ");
+            sendDigits(tmp->obj->x);
+            sendString(", ");
+            sendDigits(tmp->obj->y);
+            sendNewLine();
 #endif
             if (tmp->pre->obj == Bird && tmp->obj->x == Bird->x)
             {
-                printObstacle (tmp->obj, Bird);
+                printObstacle(tmp->obj, Bird);
             }
-            else if (tmp->obj->x >= MAX_X) return;
+            else if (tmp->obj->x >= MAX_X)
+                return;
             else
             {
-                printObstacle (tmp->obj, NULL);
+                printObstacle(tmp->obj, NULL);
             }
-            
         }
     }
 }
 
-BaseIntu8 CheckHeight(ObListItem *item)
+// @param *item: object instance to check with bird
+// @param s: the caller type, button 0, process routine 1
+BaseIntu8 CheckHeight(ObListItem *item, BaseIntu8 s)
 {
-    if (item->obj->y >= Bird->y) 
+    if (item->obj->y >= Bird->y)
     {
         GameEnd();
         return;
@@ -463,9 +462,15 @@ BaseIntu8 CheckHeight(ObListItem *item)
             return;
         }
     }
-    score += 10;
+    if (s)
+    {
+        score += 10;
+        // add difficulty
+        if (score % 100 == 0)
+            addDifficulty();
+    }
     LEDOn();
-    addTask(createTask(LEDOff,1,500));
+    addTask(createTask(LEDOff, 1, 500));
 }
 
 /* add a new item to the end of the list */
@@ -481,9 +486,9 @@ void InitGame()
     InterruptState lastState = disableTimer();
     printInit();
     srand(123456);
-    addTask(createTask(update, -1, GameSpeed));
+    updateTaskId = addTask(createTask(update, -1, GameSpeed));
     addTask(createTask(subtileshifter, -1, 300));
-    addTask(createTask(buttonPressTask, -1, FPS));
+    buttonTaskId = addTask(createTask(buttonPressTask, -1, FPS));
 #ifdef DEBUG
     sendString("tasks added success");
     sendNewLine();
@@ -503,17 +508,18 @@ void InitObstacles()
     // As the bird is at x = 0, we choose the strategy
     // that the first obstacle is at x = 3
     y = rand() % (MAX_DEPTH - 5);
-    height = 5 + rand() % (MAX_DEPTH - 5 - y);  // the height can not be 0, give it an offset
+    height = 5 + rand() % (MAX_DEPTH - 5 - y); // the height can not be 0, give it an offset
 
-    AddNewItem (CreateListItem (CreateObstacle (3, y, height)));
+    AddNewItem(CreateListItem(CreateObstacle(3, y, height)));
 
     for (int i = 1; i <= 3; ++i)
     {
         x = interval * i + rand() % interval;
-        if (x == tail->obj->x + 1) x++;
+        if (x == tail->obj->x + 1)
+            x++;
         y = rand() % (MAX_DEPTH - 5);
         height = 5 + rand() % (MAX_DEPTH - 5 - y);
-        AddNewItem (CreateListItem (CreateObstacle (x, y, height)));
+        AddNewItem(CreateListItem(CreateObstacle(x, y, height)));
     }
 }
 
@@ -527,11 +533,12 @@ void AddNewObstacle()
     BaseIntu8 x, y, height;
     BaseIntu8 const interval = MAX_X / 4;
     x = rand() % interval;
-    if (MAX_X + x <= tail->obj->x + 1) x = tail->obj->x + 2 - MAX_X;
+    if (MAX_X + x <= tail->obj->x + 1)
+        x = tail->obj->x + 2 - MAX_X;
     y = rand() % (MAX_DEPTH - 5);
     height = 5 + rand() % (MAX_DEPTH - 5 - y);
 
-#ifdef DEBUG    
+#ifdef DEBUG
     sendString("Creat new abstacle: x :");
     sendDigits(MAX_X + x);
     sendString(" y:");
@@ -540,7 +547,7 @@ void AddNewObstacle()
     sendDigits(height);
     sendNewLine();
 #endif
-    AddNewItem (CreateListItem (CreateObstacle (MAX_X + x, y, height)));
+    AddNewItem(CreateListItem(CreateObstacle(MAX_X + x, y, height)));
 }
 
 void GameStart()
@@ -609,27 +616,66 @@ void GameLooper(BaseIntu8 s)
     backToLastInter(lastState);
 }
 
+void godModeProcess()
+{
+    if (gameStatus == GOD)
+    {
+        BaseIntu8 dest_y = head->next->obj->y + head->next->obj->height - 4;
+        BaseIntu8 dest_x = head->next->obj->x;
+        if (Bird->x != dest_x && Bird->x + 3 >= dest_x)
+        {
+            if (Bird->y + loftspeed <= dest_y + 1 || Bird->y <= head->next->obj->y + 1)
+            {
+                // while (Bird->y != dest_y + 1)
+                // {
+                Bird->y += loftspeed;
+                loftspeed = loftspeed >= MAX_LOFT_SPEED ? MAX_LOFT_SPEED : loftspeed + 1;
+                printBird(Bird);
+                // }
+                speed = 1;
+            }
+        }
+        else if (Bird->y - speed < 2)
+        {
+            // while (Bird->y != dest_y)
+            // {
+            Bird->y += loftspeed;
+            loftspeed = loftspeed >= MAX_LOFT_SPEED ? MAX_LOFT_SPEED : loftspeed + 1;
+            printBird(Bird);
+            // }
+            speed = 1;
+        }
+    }
+}
+
 void OnButtonPressed(BaseIntu8 s)
 {
     InterruptState lastState = disableTimer();
 
-    if (s & A && s & B) onButtonPressed_AB();
-    else if (s & UP) onButtonPressed_U();
-    else if (s & DOWN) onButtonPressed_D();
-    else if (s & LEFT) onButtonPressed_L();
-    else if (s & RIGHT) onButtonPressed_R();
-    else if (s & A) onButtonPressed_A();
-    else if (s & B) onButtonPressed_B();
+    if (s & A && s & B)
+        onButtonPressed_AB();
+    else if (s & UP)
+        onButtonPressed_U();
+    else if (s & DOWN)
+        onButtonPressed_D();
+    else if (s & LEFT)
+        onButtonPressed_L();
+    else if (s & RIGHT)
+        onButtonPressed_R();
+    else if (s & A)
+        onButtonPressed_A();
+    else if (s & B)
+        onButtonPressed_B();
+
     backToLastInter(lastState);
 }
 
 void setGameSpeed(BaseIntu32 speed)
 {
-    GameSpeed = speed;
+    GameSpeed = speed < HIGHEST_GAME_SPEED ? HIGHEST_GAME_SPEED : speed;
 #ifdef DEBUG
-sendString("Set game speed: ");
-sendDigits(speed);
-sendNewLine();
+    sendString("Set game speed: ");
+    sendDigits(speed);
+    sendNewLine();
 #endif
-
 }

@@ -16,6 +16,7 @@
 #define MAX_DEPTH 16
 #define MAX_X 16
 #define MAX_SPEED 3
+#define MAX_LOFT_SPEED 3
 #define SCORE_ADDR 0xF0
 
 static BaseIntu32 FPS = 0;
@@ -76,7 +77,7 @@ void DeleteListItem(ObListItem *item);
 void deleteAll();
 ObListItem *CreateListItem(Object *obj);
 void ProcessScreen();
-BaseIntu8 CheckHeight(ObListItem *item);
+BaseIntu8 CheckHeight(ObListItem *item, BaseIntu8);
 void AddNewItem(ObListItem *Item);
 void InitGame();
 void InitObstacles();

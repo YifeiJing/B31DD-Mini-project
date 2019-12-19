@@ -48,6 +48,7 @@ taskItem* createTask (void (*p)(), int16_t cycle, int16_t delay);
 uint8_t addTask(taskItem *task);
 void removeTask(uint8_t id);
 void deleteTask(taskItem *task);
+void changeTaskDelay(uint8_t id, uint16_t delay);
 void testmemory();
 void LEDOn();
 void LEDOff();

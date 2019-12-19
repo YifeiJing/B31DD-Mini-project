@@ -196,7 +196,7 @@ ISR(TIMER2_OVF_vect)
         {
             if (TaskList[i]->cycle > 0)
             {
-                if (TaskList[i]->state == TaskList[i]->delay)
+                if (TaskList[i]->state >= TaskList[i]->delay)
                 {
                     TaskList[i]->p();
                     TaskList[i]->cycle--;
@@ -211,7 +211,7 @@ ISR(TIMER2_OVF_vect)
             // -1 for infinite cycles
             else if (TaskList[i]->cycle == -1)
             {
-                if (TaskList[i]->state == TaskList[i]->delay)
+                if (TaskList[i]->state >= TaskList[i]->delay)
                 {
                     TaskList[i]->p();
                     TaskList[i]->state = 0;
@@ -379,4 +379,10 @@ void removeTask(uint8_t id)
 {
     deleteTask(TaskList[id]);
     TaskList[id] = NULL;
+}
+
+void changeTaskDelay(uint8_t id, uint16_t delay)
+{
+    if (TaskList[id] == NULL) return;
+    TaskList[id]->delay = delay;
 }
